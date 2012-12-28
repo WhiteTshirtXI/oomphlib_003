@@ -1,3 +1,7 @@
+######################################################################
+# Dumped from a fresh install. Only keep track of files I want
+######################################################################
+
 aclocal.m4
 AUTHORS
 autogen_fresh.dat
@@ -20,12 +24,15 @@ COPYING
 demo_drivers/
 depcomp
 doc/
+
+# Only keep track of 
+# external_distributions/trilinos/trilinos-11.0.3-Source.tar.gz
 external_distributions/*
 !external_distributions/trilinos/
 external_distributions/trilinos/*
 !external_distributions/trilinos/trilinos-11.0.3-Source.tar.gz
+
 external_src/
-*.swp
 INSTALL
 install-sh
 libtool
@@ -46,3 +53,33 @@ stamp-h1
 #user_src/#######################################
 validate.sh
 validation.log
+
+
+######################################################################
+# Below is mostly taken from the web. Common things to ignore for C++
+######################################################################
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+
+# Temporary files
+*.swp
+*~
+*\#
+
+# Data files
+*.dat
+
+#ctags file
+tags
