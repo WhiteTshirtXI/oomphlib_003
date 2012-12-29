@@ -81,5 +81,8 @@ validation.log
 # Data files
 *.dat
 
+# Backup files
+*.bk.*
+
 #ctags file
 tags
