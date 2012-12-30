@@ -522,13 +522,22 @@ public:
  /// \short Constructor. Default settings: Current directory, step `0',
  /// label="", full documentation enabled and output directory is not required
  /// to exist when set_directory() is called.
- DocInfo()
+ DocInfo() : Iterations_and_times()
   {
    Directory=".";
    Number=0;
    Label="";
    Doc_flag=true;
    Directory_must_exist=false;
+
+   //Time_step_counter = 0;
+   //Newton_step_counter = 0;
+   //Krylov_step_counter = 0;
+
+   Doc_solution_flag = false;
+   Doc_prec_data_flag = false;
+   
+   //this->setup_new_time_step();
   }
 
  /// Output directory
@@ -549,6 +558,66 @@ public:
  /// \short Are we documenting?
  bool is_doc_enabled() const {return Doc_flag;}
 
+ /// \short Enable documentation of solution.
+ void enable_doc_solution() {Doc_solution_flag=true;}
+
+ /// \short Disable documentation of solution.
+ void disable_doc_solution() {Doc_solution_flag=false;}
+
+ /// \short Are we documenting the solution?
+ bool is_doc_solution_enabled() const {return Doc_solution_flag;}
+ 
+ /// \short Enable dumping the preconditioner data?
+ void enable_doc_prec_data() {Doc_prec_data_flag=true;}
+
+ /// \short Disable dumping the preconditioner data.
+ void disable_doc_prec_data() {Doc_prec_data_flag=false;}
+
+ /// \short Are we documenting?
+ bool is_doc_prec_data_enabled() const {return Doc_prec_data_flag;}
+
+ /// The number of time steps.
+ //unsigned& time_step_counter() {return Time_step_counter;}
+ void setup_new_time_step()
+ {
+   Iterations_and_times.push_back(Vector<std::pair<unsigned,double> >());
+ }
+ 
+ /// The number of time steps. Const version.
+ //unsigned time_step_counter() const {return Time_step_counter;}
+ unsigned current_ntime_step() const {return Iterations_and_times.size();}
+ 
+ /// The number of Newton steps.
+ //unsigned& newton_step_counter() {return Newton_step_counter;}
+ void add_iteration_and_time(unsigned required_iter, double required_time)
+ {
+#ifdef PARANOID
+   if(Iterations_and_times.size() == 0)
+   {
+     std::ostringstream error_message;
+     error_message << "Iterations_and_times is empty. "
+                   << "Call setup_new_time_step()\n";
+     throw OomphLibError(
+      error_message.str(),"DocInfo::add_iteration_and_time()",
+      OOMPH_EXCEPTION_LOCATION);
+   }
+#endif 
+
+
+   std::pair<unsigned, double> iter_time_pair(required_iter,required_time);
+   Iterations_and_times.back().push_back(iter_time_pair);
+ }
+ /// The number of Newton steps. Const version.
+ //unsigned newton_step_counter() const {return Newton_step_counter;}
+ unsigned current_nnewton_step() const 
+   {return Iterations_and_times.back().size();}
+
+ /// The number of Newton steps.
+ //unsigned& krylov_step_counter() {return Krylov_step_counter;}
+
+ /// The number of Newton steps. Const version.
+ //unsigned krylov_step_counter() const {return Krylov_step_counter;}
+
  /// Number used (e.g.) for labeling output files
  unsigned& number() {return Number;}
 
@@ -568,11 +637,20 @@ public:
  std::string label() const {return Label;}
 
  /// \short Call to throw an error if directory does not exist
- void enable_error_if_directory_does_not_exist() {Directory_must_exist=true;}
+ void enable_error_if_directory_does_not_exist() 
+   {Directory_must_exist=true;}
 
  /// \short Call to issue a warning if the directory does not exists
- void disable_error_if_directory_does_not_exist() {Directory_must_exist=false;}
- 
+ void disable_error_if_directory_does_not_exist() 
+   {Directory_must_exist=false;}
+
+ Vector<Vector<std::pair<unsigned,double> > >& iterations_and_times()
+   {return Iterations_and_times;}
+
+ Vector<Vector<std::pair<unsigned,double> > > iterations_and_times() const 
+   {return Iterations_and_times;}
+
+
 private:
 
  /// Directory name
@@ -593,6 +671,31 @@ private:
  /// code execution by throwing an OomphLibError rather than 
  /// just issuing a warning.
  bool Directory_must_exist;
+
+ /////////////////////////////////////////////////
+ // Additional information used by Raymon White //
+ // for preconditioners///////////////////////////
+ /////////////////////////////////////////////////
+ 
+ // Storage for number of iterations during Newton steps 
+ Vector<Vector<std::pair<unsigned, double> > > Iterations_and_times;
+ 
+ 
+ // Counter for the current time step.
+ //unsigned Time_step_counter;
+
+ // Counter for the current Newton Step
+ // within a time step - resets to 0 per
+ // time step.
+ //unsigned Newton_step_counter;
+
+ // Counter for the current Newton iteration
+ // within a Newton Step - resets per Newton Step
+ //unsigned Krylov_step_counter;
+
+ // Flags for dumping solution and matrix data.
+ bool Doc_solution_flag;
+ bool Doc_prec_data_flag;
 };
 
 

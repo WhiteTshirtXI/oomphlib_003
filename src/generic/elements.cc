@@ -4733,6 +4733,713 @@ void FiniteElement::identify_field_data_for_interactions(
   return sqrt(Adet);
  }
 
+//////////////// RAYRAY
+
+//=======================================================================
+/// Compute the tangent vector(s) at the specified local coordinate
+//=======================================================================
+void FaceElement::tangent(const Vector<double> &s,
+                          Vector<Vector<double> > &tang_vec) const
+{
+  std::cout << "Hi from tangent (vector)" << std::endl;
+  
+  //Find the spatial dimension of the FaceElement
+  const unsigned element_dim = dim();
+
+  //Find the overall dimension of the problem 
+  //(assume that it's the same for all nodes)
+  const unsigned spatial_dim = nodal_dimension();
+
+#ifdef PARANOID
+  //Check the number of local coordinates passed
+  if(s.size()!=element_dim)
+   {
+    std::ostringstream error_stream;
+    error_stream
+     << "Local coordinate s passed to tangent() has dimension " 
+     << s.size() << std::endl
+     << "but element dimension is " << element_dim << std::endl;
+   
+    throw OomphLibError(error_stream.str(),
+                        "FaceElement::tangent()",
+                        OOMPH_EXCEPTION_LOCATION);
+   }
+
+  //Check the dimension of the normal vector
+  if(tang_vec[0].size()!=spatial_dim)
+   {
+    std::ostringstream error_stream;
+    error_stream
+     << "Unit normal passed to tangent() has dimension " 
+     << tang_vec[0].size() << std::endl
+     << "but spatial dimension is " << spatial_dim << std::endl;
+   
+    throw OomphLibError(error_stream.str(),
+                        "FaceElement::tangent()",
+                        OOMPH_EXCEPTION_LOCATION);
+   }
+#endif   
+
+  //Now let's consider the different element dimensions
+  switch(element_dim)
+   {
+    //Point element, derived from a 1D element, in this case
+    //the tangent vector is merely the tangent to the bulk element
+    //and there is only one free coordinate in the bulk element
+    //Hence we will need to calculate the derivatives wrt the
+    //local coordinates in the BULK element.
+     case 0:
+     {
+       // Find the number of nodes in the Bulk element
+       const unsigned n_node_bulk = Bulk_element_pt->nnode();
+       //Find the number of position types in the bulk element
+       const unsigned n_position_type_bulk = 
+        Bulk_element_pt->nnodal_position_type();
+
+       //Construct the local coordinate in the bulk element
+       Vector<double> s_bulk(1);
+
+       //Get the local coordinates in the bulk element
+       get_local_coordinate_in_bulk(s,s_bulk);
+       
+      //Allocate storage for the shape functions and their derivatives wrt
+      //local coordinates
+      Shape psi(n_node_bulk,n_position_type_bulk);
+      DShape dpsids(n_node_bulk,n_position_type_bulk,1);
+      //Get the value of the shape functions at the given local coordinate
+      Bulk_element_pt->dshape_local(s_bulk,psi,dpsids);
+
+      
+    //Calculate all derivatives of the spatial coordinates wrt 
+    //local coordinates
+    DenseMatrix<double> interpolated_dxds(1,spatial_dim);
+    //Initialise to zero
+    for(unsigned i=0;i<spatial_dim;i++) {interpolated_dxds(0,i) = 0.0;}
+    
+    //Loop over all parent nodes
+    for(unsigned l=0;l<n_node_bulk;l++)
+     {
+      //Loop over all position types in the bulk
+      for(unsigned k=0;k<n_position_type_bulk;k++)
+       {
+        //Loop over coordinate directions
+        for(unsigned i=0;i<spatial_dim;i++)
+         {
+          //Compute the spatial derivative
+          interpolated_dxds(0,i) += 
+             Bulk_element_pt->nodal_position_gen(l,k,i)*dpsids(l,k,0);
+         } // for
+       } // for
+     } // for
+
+    //Now the unit normal is just the derivative of the position vector
+    //with respect to the single coordinate
+    for(unsigned i=0;i<spatial_dim;i++)
+     {tang_vec[0][i] = interpolated_dxds(0,i);}
+     } // case 0
+     break;
+   
+    //Line element, derived from a 2D element, in this case
+    //the normal is a mess of cross products
+    //We need an interior direction, so we must find the local
+    //derivatives in the BULK element
+   case 1:
+   {
+    //Find the number of nodes in the bulk element
+    const unsigned n_node_bulk = Bulk_element_pt->nnode();
+    //Find the number of position types in the bulk element
+    const unsigned n_position_type_bulk = 
+     Bulk_element_pt->nnodal_position_type();
+    
+    //Construct the local coordinate in the bulk element
+    Vector<double> s_bulk(2);
+    //Get the local coordinates in the bulk element
+    get_local_coordinate_in_bulk(s,s_bulk);
+    
+    //Allocate storage for the shape functions and their derivatives wrt
+    //local coordinates
+    Shape psi(n_node_bulk,n_position_type_bulk);
+    DShape dpsids(n_node_bulk,n_position_type_bulk,2);
+    //Get the value of the shape functions at the given local coordinate
+    Bulk_element_pt->dshape_local(s_bulk,psi,dpsids);
+ 
+    //Calculate all derivatives of the spatial coordinates 
+    //wrt local coordinates
+    DenseMatrix<double> interpolated_dxds(2,spatial_dim);
+    //Initialise to zero
+    for(unsigned j=0;j<2;j++)
+     {for(unsigned i=0;i<spatial_dim;i++) {interpolated_dxds(j,i) = 0.0;}}
+    
+    //Loop over all parent nodes
+    for(unsigned l=0;l<n_node_bulk;l++)
+     {
+      //Loop over all position types in the bulk
+      for(unsigned k=0;k<n_position_type_bulk;k++)
+       {
+        //Loop over derivative direction
+        for(unsigned j=0;j<2;j++)
+         {
+          //Loop over coordinate directions
+          for(unsigned i=0;i<spatial_dim;i++)
+           {
+            //Compute the spatial derivative
+            interpolated_dxds(j,i) += 
+             Bulk_element_pt->nodal_position_gen(l,k,i)*dpsids(l,k,j);
+           }
+         }
+       }
+     }
+
+    // RAYRAY I NEED HELP TO UNDERSTAND THIS... maybe
+
+    //Initialise the tangent, interior tangent and normal vectors to zero
+    //The idea is that even if the element is in a two-dimensional space,
+    //the normal cannot be calculated without embedding the element in three
+    //dimensions, in which case, the tangent and interior tangent will have
+    //zero z-components.
+    Vector<double> tangent(3,0.0), interior_tangent(3,0.0), normal(3,0.0);
+
+    //We must get the relationship between the coordinate along the face
+    //and the local coordinates in the bulk element
+    //We must also find an interior direction
+    DenseMatrix<double> dsbulk_dsface(2,1,0.0);
+    unsigned interior_direction=0;
+    get_ds_bulk_ds_face(s,dsbulk_dsface,interior_direction);
+    //Load in the values for the tangents
+    for(unsigned i=0;i<spatial_dim;i++)
+     {
+      //Tangent to the face is the derivative wrt to the face coordinate
+      //which is calculated using dsbulk_dsface and the chain rule
+      tangent[i] = interpolated_dxds(0,i)*dsbulk_dsface(0,0)
+       + interpolated_dxds(1,i)*dsbulk_dsface(1,0);
+      //Interior tangent to the face is the derivative in the interior 
+      //direction
+      interior_tangent[i] = interpolated_dxds(interior_direction,i);
+     }
+
+    //Now the (3D) normal to the element is the interior tangent 
+    //crossed with the tangent
+    normal[0] = 
+     interior_tangent[1]*tangent[2] - interior_tangent[2]*tangent[1];
+    normal[1] = 
+     interior_tangent[2]*tangent[0] - interior_tangent[0]*tangent[2];
+    normal[2] = 
+     interior_tangent[0]*tangent[1] - interior_tangent[1]*tangent[0];
+   
+    //We find the line normal by crossing the element normal with the tangent
+    Vector<double> full_normal(3);
+    full_normal[0] = normal[1]*tangent[2] - normal[2]*tangent[1];
+    full_normal[1] = normal[2]*tangent[0] - normal[0]*tangent[2];
+    full_normal[2] = normal[0]*tangent[1] - normal[1]*tangent[0];
+
+    //Copy the appropriate entries into the unit normal
+    //Two or Three depending upon the spatial dimension of the system
+    for(unsigned i=0;i<spatial_dim;i++) {tang_vec[0][i] = tangent[i];}
+
+
+
+   } // case 1
+   break;
+
+   //Plane element, derived from 3D element, in this case the normal
+   //is just the cross product of the two surface tangents
+   //We assume, therefore, that we have three spatial coordinates
+   //and two surface coordinates
+   //Then we need only to get the derivatives wrt the local coordinates
+   //in this face element
+   case 2:
+   {
+#ifdef PARANOID
+    //Check that we actually have three spatial dimensions
+    if(spatial_dim != 3)
+     {
+      std::ostringstream error_stream;
+      error_stream << "There are only " << spatial_dim
+                   << "coordinates at the nodes of this 2D FaceElement,\n"
+                   << "which must have come from a 3D Bulk element\n";
+      throw OomphLibError(error_stream.str(),
+                          "FaceElement::tangent()",
+                          OOMPH_EXCEPTION_LOCATION);
+     }
+#endif
+
+
+    //Find the number of nodes in the element
+    const unsigned n_node  = this->nnode();
+    //Find the number of position types
+    const unsigned n_position_type = this->nnodal_position_type();
+    
+    //Allocate storage for the shape functions and their derivatives wrt
+    //local coordinates
+    Shape psi(n_node,n_position_type);
+    DShape dpsids(n_node,n_position_type,2);
+    //Get the value of the shape functions at the given local coordinate
+    this->dshape_local(s,psi,dpsids);
+ 
+    //Calculate all derivatives of the spatial coordinates 
+    //wrt local coordinates
+    DenseMatrix<double> interpolated_dxds(2,3);
+    //Initialise to zero
+    for(unsigned j=0;j<2;j++)
+     {for(unsigned i=0;i<3;i++) {interpolated_dxds(j,i) = 0.0;}}
+    
+    //Loop over all nodes
+    for(unsigned l=0;l<n_node;l++)
+     {
+      //Loop over all position types
+      for(unsigned k=0;k<n_position_type;k++)
+       {
+        //Loop over derivative directions
+        for(unsigned j=0;j<2;j++)
+         {
+          //Loop over coordinate directions
+          for(unsigned i=0;i<3;i++)
+           {
+            //Compute the spatial derivative
+            //Remember that we need to translate the position type
+            //to its location in the bulk node
+            interpolated_dxds(j,i) += 
+             this->nodal_position_gen(l,bulk_position_type(k),i)*dpsids(l,k,j);
+           }
+         }
+       }
+     }//for
+
+    tang_vec[0][0] = interpolated_dxds(0,0);
+    tang_vec[0][1] = interpolated_dxds(0,1);
+    tang_vec[0][2] = interpolated_dxds(0,2);
+
+    tang_vec[1][0] = interpolated_dxds(1,0);
+    tang_vec[1][1] = interpolated_dxds(1,1);
+    tang_vec[1][2] = interpolated_dxds(1,2);
+
+   }//case 2
+    break;
+
+   default:
+
+    throw OomphLibError(
+     "Cannot have a FaceElement with dimension higher than 2",
+     "FaceElement::outer_unit_normal()",
+     OOMPH_EXCEPTION_LOCATION);
+    break;
+   } // switch(element_dim)
+}
+
+//=======================================================================
+/// Compute the tangent vector(s) at the ipt-th integration point
+//=======================================================================
+void FaceElement::tangent(const unsigned &ipt,
+                          Vector<Vector<double> > &tang_vec) const
+{
+  std::cout << "Hi from tangent (ipt)" << std::endl;
+  
+  // Fine the dimension of the element
+  const unsigned element_dim = dim();
+  // Find the local coordinates of the ipt-th integration point
+  Vector<double> s(element_dim);
+  for(unsigned i=0;i<element_dim;i++) {s[i] = integral_pt()->knot(ipt,i);}
+  // Call the tangent function
+  tangent(s,tang_vec);
+}
+
+
+
+//=======================================================================
+/// Compute the tangent and outer unit normal at the specified local coordinate
+//=======================================================================
+void FaceElement::tangent_and_outer_unit_normal(const Vector<double> &s,
+                                                Vector<Vector<double> > &tang_vec,
+                                                Vector<double> &unit_normal) const
+{
+ //Find the spatial dimension of the FaceElement
+  const unsigned element_dim = dim();
+
+  //Find the overall dimension of the problem 
+  //(assume that it's the same for all nodes)
+  const unsigned spatial_dim = nodal_dimension();
+ 
+#ifdef PARANOID
+  //Check the number of local coordinates passed
+  if(s.size()!=element_dim)
+   {
+    std::ostringstream error_stream;
+    error_stream
+     << "Local coordinate s passed to outer_unit_normal() has dimension " 
+     << s.size() << std::endl
+     << "but element dimension is " << element_dim << std::endl;
+   
+    throw OomphLibError(error_stream.str(),
+                        "FaceElement::outer_unit_normal()",
+                        OOMPH_EXCEPTION_LOCATION);
+   }
+ 
+  //Check the dimension of the normal vector
+  if(unit_normal.size()!=spatial_dim)
+   {
+    std::ostringstream error_stream;
+    error_stream
+     << "Unit normal passed to outer_unit_normal() has dimension " 
+     << unit_normal.size() << std::endl
+     << "but spatial dimension is " << spatial_dim << std::endl;
+   
+    throw OomphLibError(error_stream.str(),
+                        "FaceElement::outer_unit_normal()",
+                        OOMPH_EXCEPTION_LOCATION);
+   }
+#endif   
+
+
+  //Now let's consider the different element dimensions
+  switch(element_dim)
+   {
+    //Point element, derived from a 1D element, in this case
+    //the normal is merely the tangent to the bulk element
+    //and there is only one free coordinate in the bulk element
+    //Hence we will need to calculate the derivatives wrt the
+    //local coordinates in the BULK element.
+   case 0:
+   {
+    //Find the number of nodes in the bulk element
+    const unsigned n_node_bulk = Bulk_element_pt->nnode();
+    //Find the number of position types in the bulk element
+    const unsigned n_position_type_bulk = 
+     Bulk_element_pt->nnodal_position_type();
+
+    //Construct the local coordinate in the bulk element
+    Vector<double> s_bulk(1);
+
+    //Get the local coordinates in the bulk element
+    get_local_coordinate_in_bulk(s,s_bulk);
+    
+    //Allocate storage for the shape functions and their derivatives wrt
+    //local coordinates
+    Shape psi(n_node_bulk,n_position_type_bulk);
+    DShape dpsids(n_node_bulk,n_position_type_bulk,1);
+    //Get the value of the shape functions at the given local coordinate
+    Bulk_element_pt->dshape_local(s_bulk,psi,dpsids);
+ 
+    //Calculate all derivatives of the spatial coordinates wrt 
+    //local coordinates
+    DenseMatrix<double> interpolated_dxds(1,spatial_dim);
+    //Initialise to zero
+    for(unsigned i=0;i<spatial_dim;i++) {interpolated_dxds(0,i) = 0.0;}
+    
+    //Loop over all parent nodes
+    for(unsigned l=0;l<n_node_bulk;l++)
+     {
+      //Loop over all position types in the bulk
+      for(unsigned k=0;k<n_position_type_bulk;k++)
+       {
+        //Loop over coordinate directions
+        for(unsigned i=0;i<spatial_dim;i++)
+         {
+          //Compute the spatial derivative
+          interpolated_dxds(0,i) += 
+             Bulk_element_pt->nodal_position_gen(l,k,i)*dpsids(l,k,0);
+         }
+       }
+     }
+    
+    // RAYGETN
+    //Now the unit normal is just the derivative of the position vector
+    //with respect to the single coordinate
+    for(unsigned i=0;i<spatial_dim;i++)
+     {unit_normal[i] = interpolated_dxds(0,i);}
+
+    for(unsigned i=0;i<spatial_dim;i++)
+     {tang_vec[0][i] = interpolated_dxds(0,i);}
+
+
+   }
+    break;
+
+    //Line element, derived from a 2D element, in this case
+    //the normal is a mess of cross products
+    //We need an interior direction, so we must find the local
+    //derivatives in the BULK element
+   case 1:
+   {
+    //Find the number of nodes in the bulk element
+    const unsigned n_node_bulk = Bulk_element_pt->nnode();
+    //Find the number of position types in the bulk element
+    const unsigned n_position_type_bulk = 
+     Bulk_element_pt->nnodal_position_type();
+    
+    //Construct the local coordinate in the bulk element
+    Vector<double> s_bulk(2);
+    //Get the local coordinates in the bulk element
+    get_local_coordinate_in_bulk(s,s_bulk);
+    
+    //Allocate storage for the shape functions and their derivatives wrt
+    //local coordinates
+    Shape psi(n_node_bulk,n_position_type_bulk);
+    DShape dpsids(n_node_bulk,n_position_type_bulk,2);
+    //Get the value of the shape functions at the given local coordinate
+    Bulk_element_pt->dshape_local(s_bulk,psi,dpsids);
+ 
+    //Calculate all derivatives of the spatial coordinates 
+    //wrt local coordinates
+    DenseMatrix<double> interpolated_dxds(2,spatial_dim);
+    //Initialise to zero
+    for(unsigned j=0;j<2;j++)
+     {for(unsigned i=0;i<spatial_dim;i++) {interpolated_dxds(j,i) = 0.0;}}
+    
+    //Loop over all parent nodes
+    for(unsigned l=0;l<n_node_bulk;l++)
+     {
+      //Loop over all position types in the bulk
+      for(unsigned k=0;k<n_position_type_bulk;k++)
+       {
+        //Loop over derivative direction
+        for(unsigned j=0;j<2;j++)
+         {
+          //Loop over coordinate directions
+          for(unsigned i=0;i<spatial_dim;i++)
+           {
+            //Compute the spatial derivative
+            interpolated_dxds(j,i) += 
+             Bulk_element_pt->nodal_position_gen(l,k,i)*dpsids(l,k,j);
+           }
+         }
+       }
+     }
+    
+    //Initialise the tangent, interior tangent and normal vectors to zero
+    //The idea is that even if the element is in a two-dimensional space,
+    //the normal cannot be calculated without embedding the element in three
+    //dimensions, in which case, the tangent and interior tangent will have
+    //zero z-components.
+    Vector<double> tangent(3,0.0), interior_tangent(3,0.0), normal(3,0.0);
+    
+    //We must get the relationship between the coordinate along the face
+    //and the local coordinates in the bulk element
+    //We must also find an interior direction
+    DenseMatrix<double> dsbulk_dsface(2,1,0.0);
+    unsigned interior_direction=0;
+    get_ds_bulk_ds_face(s,dsbulk_dsface,interior_direction);
+    //Load in the values for the tangents
+    for(unsigned i=0;i<spatial_dim;i++)
+     {
+      //Tangent to the face is the derivative wrt to the face coordinate
+      //which is calculated using dsbulk_dsface and the chain rule
+      tangent[i] = interpolated_dxds(0,i)*dsbulk_dsface(0,0)
+       + interpolated_dxds(1,i)*dsbulk_dsface(1,0);
+      //Interior tangent to the face is the derivative in the interior 
+      //direction
+      interior_tangent[i] = interpolated_dxds(interior_direction,i);
+     }
+
+    //Now the (3D) normal to the element is the interior tangent 
+    //crossed with the tangent
+    normal[0] = 
+     interior_tangent[1]*tangent[2] - interior_tangent[2]*tangent[1];
+    normal[1] = 
+     interior_tangent[2]*tangent[0] - interior_tangent[0]*tangent[2];
+    normal[2] = 
+     interior_tangent[0]*tangent[1] - interior_tangent[1]*tangent[0];
+   
+    //We find the line normal by crossing the element normal with the tangent
+    Vector<double> full_normal(3);
+    full_normal[0] = normal[1]*tangent[2] - normal[2]*tangent[1];
+    full_normal[1] = normal[2]*tangent[0] - normal[0]*tangent[2];
+    full_normal[2] = normal[0]*tangent[1] - normal[1]*tangent[0];
+
+    //Copy the appropriate entries into the unit normal
+    //Two or Three depending upon the spatial dimension of the system
+    for(unsigned i=0;i<spatial_dim;i++) {unit_normal[i] = full_normal[i];}
+
+    for(unsigned i=0;i<spatial_dim;i++) {tang_vec[0][i] = tangent[i];}
+    
+    // Normalise the tangent
+    double tang_length = 0.0; 
+    unsigned vec_i=0;
+    for(unsigned dim_i=0;dim_i<spatial_dim;dim_i++)
+      {tang_length += tang_vec[vec_i][dim_i]*tang_vec[vec_i][dim_i];}
+    
+    tang_length = sqrt(tang_length);
+
+    for(unsigned dim_i=0;dim_i<spatial_dim;dim_i++)
+      {tang_vec[vec_i][dim_i] /= tang_length;}
+   }
+   break;
+
+   //Plane element, derived from 3D element, in this case the normal
+   //is just the cross product of the two surface tangents
+   //We assume, therefore, that we have three spatial coordinates
+   //and two surface coordinates
+   //Then we need only to get the derivatives wrt the local coordinates
+   //in this face element
+   case 2:
+   {
+#ifdef PARANOID
+    //Check that we actually have three spatial dimensions
+    if(spatial_dim != 3)
+     {
+      std::ostringstream error_stream;
+      error_stream << "There are only " << spatial_dim
+                   << "coordinates at the nodes of this 2D FaceElement,\n"
+                   << "which must have come from a 3D Bulk element\n";
+      throw OomphLibError(error_stream.str(),
+                          "FaceElement::outer_unit_normal()",
+                          OOMPH_EXCEPTION_LOCATION);
+     }
+#endif
+
+    //Find the number of nodes in the element
+    const unsigned n_node  = this->nnode();
+    //Find the number of position types
+    const unsigned n_position_type = this->nnodal_position_type();
+    
+    //Allocate storage for the shape functions and their derivatives wrt
+    //local coordinates
+    Shape psi(n_node,n_position_type);
+    DShape dpsids(n_node,n_position_type,2);
+    //Get the value of the shape functions at the given local coordinate
+    this->dshape_local(s,psi,dpsids);
+ 
+    //Calculate all derivatives of the spatial coordinates 
+    //wrt local coordinates
+    DenseMatrix<double> interpolated_dxds(2,3);
+    //Initialise to zero
+    for(unsigned j=0;j<2;j++)
+     {for(unsigned i=0;i<3;i++) {interpolated_dxds(j,i) = 0.0;}}
+    
+    //Loop over all nodes
+    for(unsigned l=0;l<n_node;l++)
+     {
+      //Loop over all position types
+      for(unsigned k=0;k<n_position_type;k++)
+       {
+        //Loop over derivative directions
+        for(unsigned j=0;j<2;j++)
+         {
+          //Loop over coordinate directions
+          for(unsigned i=0;i<3;i++)
+           {
+            //Compute the spatial derivative
+            //Remember that we need to translate the position type
+            //to its location in the bulk node
+            interpolated_dxds(j,i) += 
+             this->nodal_position_gen(l,bulk_position_type(k),i)*dpsids(l,k,j);
+           }
+         }
+       }
+     }
+
+    //We now take the cross product of the two normal vectors
+    unit_normal[0] = 
+     interpolated_dxds(0,1)*interpolated_dxds(1,2) -
+     interpolated_dxds(0,2)*interpolated_dxds(1,1);
+    unit_normal[1] = 
+     interpolated_dxds(0,2)*interpolated_dxds(1,0) -
+     interpolated_dxds(0,0)*interpolated_dxds(1,2);
+    unit_normal[2] = 
+     interpolated_dxds(0,0)*interpolated_dxds(1,1) -
+     interpolated_dxds(0,1)*interpolated_dxds(1,0);
+  
+   /* 
+    streamsize cout_precision = cout.precision();
+    cout << setprecision(15) << interpolated_dxds(0,0) << " " 
+                             << interpolated_dxds(0,1) << " "
+                             << interpolated_dxds(0,2) << endl;
+
+    cout << setprecision(15) << interpolated_dxds(1,0) << " "
+                             << interpolated_dxds(1,1) << " "
+                             << interpolated_dxds(1,2) << endl;
+
+    cout << setprecision(cout_precision) << std::endl;
+*/
+
+
+
+
+    tang_vec[0][0] = interpolated_dxds(0,0);
+    tang_vec[0][1] = interpolated_dxds(0,1);
+    tang_vec[0][2] = interpolated_dxds(0,2);
+    tang_vec[1][0] = interpolated_dxds(1,0);
+    tang_vec[1][1] = interpolated_dxds(1,1);
+    tang_vec[1][2] = interpolated_dxds(1,2);
+
+//*
+  // normalise 
+  // Loop through the two vectors
+  for(unsigned vec_i=0; vec_i<2; vec_i++)
+  {
+    // Get the length...
+    double tang_length = 0.0;
+    for(unsigned dim_i=0;dim_i<spatial_dim;dim_i++) 
+     {tang_length += tang_vec[vec_i][dim_i]*tang_vec[vec_i][dim_i];}
+    
+    tang_length = sqrt(tang_length);
+
+    for(unsigned dim_i=0;dim_i<spatial_dim;dim_i++) 
+     {tang_vec[vec_i][dim_i] /= tang_length;}
+
+  }
+// */
+
+/*
+    streamsize cout_precision = cout.precision();
+    cout << setprecision(15) << tang_vec[0][0] << " " 
+                             << tang_vec[0][1] << " "
+                             << tang_vec[0][2] << endl;
+
+    cout << setprecision(15) << tang_vec[1][0] << " "
+                             << tang_vec[1][1] << " "
+                             << tang_vec[1][2] << endl;
+
+    cout << setprecision(cout_precision) << std::endl;
+
+
+pause("test done!");
+// */
+   }
+    break;
+
+   default:
+
+    throw OomphLibError(
+     "Cannot have a FaceElement with dimension higher than 2",
+     "FaceElement::outer_unit_normal()",
+     OOMPH_EXCEPTION_LOCATION);
+    break;
+   }
+   
+  //Finally normalise unit normal
+  double length = 0.0;
+  for(unsigned i=0;i<spatial_dim;i++) 
+   {length += unit_normal[i]*unit_normal[i];}
+  for(unsigned i=0;i<spatial_dim;i++) 
+   {unit_normal[i] *= Normal_sign/sqrt(length);}
+
+  // Lets normalise the tangent vectors as well... why not?
+
+
+
+}
+
+//=======================================================================
+/// Compute the tangent and outer unit normal 
+/// at the ipt-th integration point
+//=======================================================================
+void FaceElement::tangent_and_outer_unit_normal(const unsigned &ipt,
+                                                Vector<Vector<double> > &tang_vec,
+                                                Vector<double> &unit_normal) const
+{
+  // Fine the dimension of the element
+  const unsigned element_dim = dim();
+  // Find the local coordinates of the ipt-th integration point
+  Vector<double> s(element_dim);
+  for(unsigned i=0;i<element_dim;i++) {s[i] = integral_pt()->knot(ipt,i);}
+  // Call the tangent function
+  tangent_and_outer_unit_normal(s,tang_vec,unit_normal);
+
+}
+
+
+
+
 
 //=======================================================================
 /// Compute the outer unit normal at the specified local coordinate

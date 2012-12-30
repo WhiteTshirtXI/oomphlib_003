@@ -3829,6 +3829,27 @@ class FaceElement: public virtual FiniteElement
  /// in the element) (const version)
  int face_index() const {return Face_index;}
 
+ // RAYRAY
+ 
+ /// \short Compute the tangent vector(s) at the specified local coordinate
+ void tangent(const Vector<double> &s, 
+              Vector<Vector<double> > &tang_vec) const;
+ 
+ /// \short Compute the tangent vector(s) at ipt-th integration point
+ void tangent(const unsigned &ipt, 
+              Vector<Vector<double> > &tang_vec) const;
+
+ /// \short Compute the tangent vector(s) and the outer unit normal
+ /// vector at the specified local coordinate
+ void tangent_and_outer_unit_normal(const Vector<double> &s,
+                                    Vector<Vector<double> > &tang_vec,
+                                    Vector<double> &unit_normal) const;
+ 
+ /// \short Compute the tangent vector(s) and the outer unit normal
+ /// vector at the ipt-th integration point
+ void tangent_and_outer_unit_normal(const unsigned &ipt,
+                                    Vector<Vector<double> > &tang_vec,
+                                    Vector<double> &unit_normal) const;
 
  /// \short Compute outer unit normal at the specified local coordinate
  void outer_unit_normal(const Vector<double> &s, 
