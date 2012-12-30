@@ -54,7 +54,8 @@ stamp-h1
 validate.sh
 validation.log
 
-
+*.deps/
+*.Plo
 ######################################################################
 # Below is mostly taken from the web. Common things to ignore for C++
 ######################################################################
