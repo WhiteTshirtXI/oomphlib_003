@@ -787,6 +787,7 @@ namespace oomph
    {
     if (!Using_default_p_preconditioner)
      {
+      delete P_preconditioner_pt;
       P_preconditioner_pt = new SuperLUPreconditioner;
       Using_default_p_preconditioner = true;
      }
@@ -817,6 +818,7 @@ namespace oomph
    {
     if (!Using_default_f_preconditioner)
      {
+      delete F_preconditioner_pt;
       F_preconditioner_pt = new SuperLUPreconditioner;
       Using_default_f_preconditioner = true;
      }

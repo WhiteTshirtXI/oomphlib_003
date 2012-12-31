@@ -770,8 +770,8 @@ namespace oomph
  /// Preconditioner solve for the block diagonal preconditioner
  //=============================================================================
  template<typename MATRIX> 
- void ExactBlockPreconditioner<MATRIX>::preconditioner_solve(
-                                                             const DoubleVector& r, DoubleVector& z)
+ void ExactBlockPreconditioner<MATRIX>::preconditioner_solve(const DoubleVector& r,
+                                                             DoubleVector& z)
  {
   // get  the block ordered components of the r vector for this preconditioner
   DoubleVector block_order_r;

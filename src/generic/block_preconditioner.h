@@ -1020,10 +1020,6 @@ namespace oomph
   /// subsidiary preconditioner not the master block preconditioner
   unsigned dof_block_dimension(const unsigned& i) const
   {
-
-   // I don't understand the difference between this function and
-   // block_dimension(...) but I'm not going to mess with it... David
-
    if(is_master_block_preconditioner())
     {
      return Dof_dimension[i];
@@ -1073,6 +1069,28 @@ namespace oomph
    else
     return this->distribution_pt();
   }
+
+
+    /// Concatenate matrices into a single matrix.
+    void cat(DenseMatrix<CRDoubleMatrix* > &matrix_pt, 
+              CRDoubleMatrix *&block_pt);
+
+    // RAYRAY: vector required for subsidiary solve.
+    // used to get the required RHS vector in the ordering of the master matrix,
+    // Since the subsidiary_setup will assume such ordering.
+    //
+    // For example, if we the Master block preconditioner has the blocking:
+    // 0 1 2 3  4  5               0 3  1 4  2 5
+    // u v p uc vc L , and we want u uc v vc p L
+    //
+    // Then this vector contains: 0 3 1 4 2.
+    //
+    // Note that to achieve the same ordering using block_setup(...) we pass 
+    // the vector: 0 2 4 1 3 5, i.e. we tell the block setup "which block goes
+    // where."
+    Vector<unsigned> Master_doftype_order;
+
+    DenseMatrix<CRDoubleMatrix*> Prec_blocks;
 
  private:
 
