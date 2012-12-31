@@ -124,6 +124,9 @@ namespace oomph
    // preconditioner
    Nblock_types=0;
    Ndof_types=0;
+
+   Master_doftype_order.resize(0);
+   //Prec_blocks.resize(0);
   }
 
   /// Destructor (empty)
@@ -162,7 +165,85 @@ namespace oomph
    return m_pt;
   }
 
+   // RAYRAY Set the blocks for the Navier Stokes preconditioner
+   void set_prec_blocks(DenseMatrix<CRDoubleMatrix*> &required_prec_blocks)
+   { 
+#ifdef PARANOID
+//     if(required_prec_blocks.size() != 3)                                                   
+//     {                                                                           
+//       std::ostringstream error_message;                                         
+//       error_message << "There must be three blocks for the\n"
+//                     << "LSC preconditioner, for F, B and Bt" << std::endl;          
+//       throw OomphLibError(error_message.str(),                                  
+//                          "ConstrainedNavierStokesSchurComplementPreconditioner",                      
+//                          OOMPH_EXCEPTION_LOCATION);                            
+//     }
+//     for (unsigned block_i = 0; block_i < 3; block_i++) 
+//     {
+//       if (required_prec_blocks[block_i] == 0) 
+//       {
+//       std::ostringstream error_message;                                         
+//       error_message << "Block " << block_i << " is not set." << std::endl;
+//       throw OomphLibError(error_message.str(),                                  
+//                          "ConstrainedNavierStokesSchurComplementPreconditioner",                      
+//                          OOMPH_EXCEPTION_LOCATION); 
+//       }
+//     }
+//
+     if(is_master_block_preconditioner())
+     {
+		  std::ostringstream error_message;
+		  error_message << "Warning: This is a master preconditioner\n"
+                    << "This function should not be called." << std::endl;
+		  throw OomphLibWarning(error_message.str(),
+					"BlockPreconditioner::set_master_doftype_ordering",
+					OOMPH_EXCEPTION_LOCATION);
+     }
+#endif
+     Prec_blocks = required_prec_blocks;
+//std::cout << "Has been set properly." << std::endl; 
+//pause("done prec set"); 
 
+     // set bool Prec_blocks_has_been_set = true - will I ever have to set it to
+     // false?
+   }
+
+
+   // RAYRAY 
+   void set_master_doftype_ordering(Vector<unsigned> &block_ordering)
+   {
+     unsigned ndof_types = this->ndof_types();
+     unsigned nblocks = block_ordering.size();
+     // check if this has the same ndof as the ndoftype of this preconditioner.
+#ifdef PARANOID
+     if(ndof_types > nblocks)
+     {
+       std::ostringstream error_message;                                         
+       error_message << "The number of blocks in the master preconditioner\n"
+                     << "must be equal to, or more than, the number of \n"
+                     << "blocks in the subsidiary preconditioner." 
+                     << std::endl;
+       throw OomphLibError(error_message.str(),
+                          "ConstrainedNavierStokesSchurComplementPreconditioner",
+                          OOMPH_EXCEPTION_LOCATION); 
+     }
+
+     if(is_master_block_preconditioner())
+     {
+		  std::ostringstream error_message;
+		  error_message << "Warning: This is a master preconditioner\n"
+                    << "This function should not be called." << std::endl;
+		  throw OomphLibWarning(error_message.str(),
+					"BlockPreconditioner::set_master_doftype_ordering",
+					OOMPH_EXCEPTION_LOCATION);
+     }
+#endif
+     // Set the Master_doftype_order vector.
+     Master_doftype_order = block_ordering;
+     
+     // Resize it, to cut off the dof types we do not require.
+     Master_doftype_order.resize(ndof_types);
+   }
   /// \short Function to turn this preconditioner into a
   /// subsidiary preconditioner that operates within a bigger
   /// "master block preconditioner (e.g. a Navier-Stokes 2x2 block
@@ -761,7 +842,6 @@ namespace oomph
                          const MATRIX* block_matrix_pt)
   {
    ObsoleteCode::obsolete();
-
    MATRIX* backup_matrix_pt = matrix_pt();
    MATRIX* cast_matrix_pt = dynamic_cast<MATRIX*>(in_matrix_pt);
    set_matrix_pt(cast_matrix_pt);
@@ -794,6 +874,17 @@ namespace oomph
     }
    return mid;
   }
+
+    /// RAYRAY
+    void dof_to_block_setup(Vector<Vector<unsigned> > dof_to_block_list)
+    {
+      // get the number of dof types in the mater preconditioner
+      unsigned master_ndof_types = master_block_preconditioner_pt()
+                                   ->ndof_types();
+      std::cout << "From dof_to_block_setup: " 
+                << master_ndof_types << std::endl;
+      pause("THIS PAUSE");
+    }
 
  protected:
 
@@ -2470,7 +2561,7 @@ namespace oomph
        = new int [Nrows_to_send_for_get_ordered[p]];
      }
 
-
+ 
 
     // loop over my rows to allocate the nrows
     DenseMatrix<unsigned> ptr_block(Nblock_types,nproc,0);
@@ -2517,7 +2608,6 @@ namespace oomph
       int pt = 0;
       for (unsigned b = 0; b < Nblock_types; ++b)
        {
-
         for (unsigned i = 0; i < Nrows_to_send_for_get_block(b,p); ++i)
          {
           Rows_to_send_for_get_ordered[p][pt] =
@@ -4071,7 +4161,197 @@ namespace oomph
                         "BlockPreconditioner<MATRIX>::get_block_vector(...)",
                         OOMPH_EXCEPTION_LOCATION);
 #endif
-   }
- }
+    }
+  }
+
+  template<typename MATRIX> void BlockPreconditioner<MATRIX>::
+  cat(DenseMatrix<CRDoubleMatrix* > &matrix_pt, CRDoubleMatrix *&block_pt)
+  {
+    bool distributed = this->master_distribution_pt()->distributed();
+    unsigned long matrix_nrow = matrix_pt.nrow();
+    unsigned long matrix_ncol = matrix_pt.ncol();
+    Vector<unsigned> block_cols(matrix_ncol);
+    
+    // get the block cols for offset
+    for(unsigned col_block_i = 0; col_block_i < matrix_ncol; col_block_i++)
+    {
+      CRDoubleMatrix* current_block_pt = matrix_pt(0,col_block_i);
+      block_cols[col_block_i] = current_block_pt->ncol();
+    }
+    
+    // Get the ncol global
+    unsigned total_ncol_global = 0;
+    for(unsigned col_i = 0; col_i < matrix_ncol; col_i++)
+    {
+      CRDoubleMatrix* current_block_pt = matrix_pt(0,col_i);
+      total_ncol_global += current_block_pt->ncol();
+    }
+    
+    // Get the nrow global.
+    unsigned total_nrow_global = 0;
+    for(unsigned row_i = 0; row_i < matrix_nrow; row_i++)
+    {
+      CRDoubleMatrix* current_block_pt = matrix_pt(row_i,0);
+      total_nrow_global += current_block_pt->nrow();
+    } // for
+    
+    LinearAlgebraDistribution* new_distribution_pt 
+      = new LinearAlgebraDistribution(problem_pt()->communicator_pt(),
+                                      total_nrow_global,distributed);
+    
+    // Get the nnz in all matrices.
+    unsigned long total_nnz = 0;
+    // Loop through the block rows.
+    for(unsigned row_block = 0; row_block < matrix_nrow; row_block++)
+    {
+      // Loop through the blocks on this row:
+      for(unsigned column_block = 0; column_block < matrix_ncol; column_block++)
+      {
+        CRDoubleMatrix* current_block_pt = matrix_pt(row_block,column_block);
+        total_nnz += current_block_pt->nnz();
+      }
+    }
+    
+    Vector<double> new_values(total_nnz);
+    Vector<int> new_column_indices(total_nnz);
+    Vector<int> new_row_start(total_nrow_global + 1);
+    
+    // Loop through the block rows.
+    unsigned long new_val_i = 0;
+    unsigned long new_row_start_i = 0;
+    unsigned long n_empty_rows = 0;
+    for(unsigned row_block = 0; row_block < matrix_nrow; row_block++)
+    {
+      // Get the number of rows in this row_block from the first block.
+      unsigned long block_nrow_local = matrix_pt(row_block,0)->nrow_local();
+      
+      // Loop through the number of local rows
+      for(unsigned i = 0; i < block_nrow_local; i++)
+      {
+        bool first_ele_in_row = true;
+        // Loop through the column blocks on this row:
+        for(unsigned column_block = 0; 
+            column_block < matrix_ncol; column_block++)
+        {
+          CRDoubleMatrix* current_block_pt 
+            = matrix_pt(row_block,column_block);
+          double* current_block_values 
+            = current_block_pt->value();
+          int* current_block_column_indicies 
+            = current_block_pt->column_index();
+          int* current_block_row_start 
+            = current_block_pt->row_start();
+          
+          // calculate the off-set
+          unsigned long offset = 0;
+          for(unsigned pre_col_block = 0; 
+              pre_col_block < column_block; pre_col_block++)
+          {
+            offset += block_cols[pre_col_block];
+          }
+          // Because indices starts at zero in C++
+          
+          
+          // We only go in here if there is a non-empty row.
+          for(int j = current_block_row_start[i]; 
+              j < current_block_row_start[i+1]; j++)
+          {
+            //cout << "new_val_i " << new_val_i << endl;
+            new_values[new_val_i] = current_block_values[j];
+            new_column_indices[new_val_i] = current_block_column_indicies[j] 
+                                            + offset;
+            
+            // Filling in the row_start
+            if(first_ele_in_row)
+            {
+              if(n_empty_rows != 0)
+              {
+                // We have to fill in the row start for all the zero rows.
+                for(unsigned long empty_row_i = 0; 
+                    empty_row_i < n_empty_rows; empty_row_i++)
+                {
+                  //cout << "new_row_start_i (empty row)" << new_row_start_i << endl;
+                  // We fill it with the current row start
+                  new_row_start[new_row_start_i] = new_val_i;
+                  new_row_start_i++;
+                } // for
+                // reset the number of empty rows.
+                n_empty_rows = 0;
+              } // if
+              //cout << "new_row_start_i (non-empty)" << new_row_start_i << endl;
+              new_row_start[new_row_start_i] = new_val_i;
+              new_row_start_i++;
+              first_ele_in_row = false;
+            } // if
+            
+            new_val_i++;
+          } // for - looping the values
+
+        } // for - looping through block columns
+          // At the end of looping through all of the column blocks,
+          // If true => no first element is reached => no row start => empty row.
+          if(first_ele_in_row)
+          {
+            n_empty_rows++;
+          } // if
+      } // for - looping throug local rows
+    } // for - looping through blockrows
+    
+    // If there are empty rows, then we fill them!
+    if(n_empty_rows != 0)
+    {
+      // We have to fill in the row start for all the zero rows.
+      for(unsigned long empty_row_i = 0; 
+          empty_row_i < n_empty_rows; empty_row_i++)
+      {
+        // We fill it with the current row start
+        new_row_start[new_row_start_i] = total_nnz;
+        new_row_start_i++;
+      } // for
+      
+      // reset the number of empty rows.
+      n_empty_rows = 0;
+    } // if
+    
+    new_row_start[total_nrow_global] = total_nnz;
+    
+    
+    if(block_pt == 0)
+    {
+      block_pt = new CRDoubleMatrix(new_distribution_pt );
+    }
+    
+    block_pt->build(total_ncol_global, new_values, 
+                    new_column_indices, new_row_start);
+    /*
+    unsigned block_nrow = total_nrow_global;
+    unsigned block_ncol = total_nrow_global;
+    unsigned block_nnz = 0;
+    double* temp_value = new double[block_nnz];
+    int* temp_column_index = new int[block_nnz];
+    
+    int* temp_row_start = new int[block_nrow+1];
+    for (unsigned i = 0; i <= block_nrow; i++)
+    {
+      temp_row_start[i] = 0;
+    }
+    
+    block_pt->build_without_copy(block_ncol,block_nnz,
+                                 temp_value,temp_column_index,
+                                 temp_row_start);
+    */
+  } // void cat
+
+
+
+
+
+
+
+
+
+
+
+
 }
 #endif
