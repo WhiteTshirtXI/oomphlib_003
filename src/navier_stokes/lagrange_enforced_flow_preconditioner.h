@@ -46,6 +46,7 @@
 #include "navier_stokes_elements.h"
 #include "refineable_navier_stokes_elements.h"
 #include "navier_stokes_preconditioners.h"
+//#include <algorithm>
 
 
 namespace oomph
@@ -217,13 +218,13 @@ class LagrangeEnforcedflowPreconditioner
 
     if(Doc_prec)
     {
-      string newton_step_counter = "NS"
-        + to_string(Doc_info_pt->current_nnewton_step());
+      std::string newton_step_counter = "NS"
+        + StringConversion::to_string(Doc_info_pt->current_nnewton_step());
 
       curr_its = static_cast<IterativeLinearSolver*>
         (problem_pt()->linear_solver_pt())->iterations();
 
-      string its_counter = "i" + to_string(curr_its);
+      std::string its_counter = "i" + StringConversion::to_string(curr_its);
 
       Label = Doc_info_pt->label() + newton_step_counter
         + its_counter;
@@ -233,7 +234,7 @@ class LagrangeEnforcedflowPreconditioner
       {
         DoubleVector x; // Will contain the re-ordered rhs
         this->get_block_ordered_preconditioner_vector(r,x);
-        x.output("rhsx_" + to_string(Label));
+        x.output("rhsx_" + StringConversion::to_string(Label));
       }
     }
 
@@ -305,7 +306,7 @@ class LagrangeEnforcedflowPreconditioner
         double t_get_merge_fluid_rhs_time = t_get_merge_fluid_rhs_finish
           - t_get_merge_fluid_rhs_start;
         std::cout << "t_get_merge_fluid_rhs_time: "
-          << t_get_merge_fluid_rhs_time << endl;
+          << t_get_merge_fluid_rhs_time << std::endl;
       }
 
       // temp_vec contains the fluid rhs.
@@ -454,7 +455,7 @@ class LagrangeEnforcedflowPreconditioner
    private:
 
   // For book keeping
-  string Label;
+  std::string Label;
 
   bool Doc_time;
 
@@ -548,12 +549,12 @@ class LagrangeEnforcedflowPreconditioner
     //unsigned first_row2 = block_pt2->first_row();
 
     // nrow_local should be the same.
-    Vector< set<int> > column_set(nrow_local1);
+    Vector< std::set<int> > column_set(nrow_local1);
     Vector<int> new_row_start(nrow_local1+1, 0);
     unsigned total_entries = 0;
 
     // Check which columns appear twice.
-    pair<set<int>::iterator,bool> ret;
+    std::pair<std::set<int>::iterator,bool> ret;
 
     for(unsigned i = 0; i < nrow_local1; i++)
     {
@@ -583,7 +584,7 @@ class LagrangeEnforcedflowPreconditioner
   unsigned nci = 0;
   for(unsigned i = 0; i < nrow_local1; i++)
   {
-    for(set<int>::const_iterator p = column_set[i].begin();
+    for(std::set<int>::const_iterator p = column_set[i].begin();
         p != column_set[i].end(); p++)
     {
       new_column_index[nci] =  *p;
@@ -687,7 +688,7 @@ class LagrangeEnforcedflowPreconditioner
           } // loop through the
         } // loop through the columns
 
-        max_row_value = max(max_row_value, current_row_total);
+        max_row_value = std::max(max_row_value, current_row_total);
       } // loop through the local rows
     } // loop through the block rows
   } // void LagrangeEnforcedflowPreconditioner::get_inf_norm
@@ -1148,7 +1149,8 @@ class LagrangeEnforcedflowPreconditioner
 //  pause("Done the block_setup_bcpl"); 
 
 
-this->block_setup(problem_pt,matrix_pt,block_setup_bcpl);
+//this->block_setup(problem_pt,matrix_pt,block_setup_bcpl);
+this->block_setup(block_setup_bcpl);
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -1371,13 +1373,13 @@ this->block_setup(problem_pt,matrix_pt,block_setup_bcpl);
   if(Doc_prec)
   {
     // This is for bebugging purposes.
-    string currentsetting = Doc_info_pt->label() + "NS"
-                            + to_string(Doc_info_pt->current_nnewton_step());
+    std::string currentsetting = Doc_info_pt->label() + "NS"
+                            + StringConversion::to_string(Doc_info_pt->current_nnewton_step());
 
 
     // Output the number of blocks.
     std::ofstream precinfo_ofstream;
-    string precinfo_string = "precinfo_" + currentsetting;
+    std::string precinfo_string = "precinfo_" + currentsetting;
     precinfo_ofstream.open(precinfo_string.c_str());
     // The dimension
     precinfo_ofstream << elemental_dimension << " ";
@@ -1399,8 +1401,8 @@ this->block_setup(problem_pt,matrix_pt,block_setup_bcpl);
         this->get_block(Mi,Mj,cr_matrix_pt,sub_matrix_pt);
         std::stringstream blockname;
         blockname << "j_"<< currentsetting<< "_"
-          << setw(2) << setfill('0') << Mi
-          << setw(2) << setfill('0') << Mj;
+          << std::setw(2) << std::setfill('0') << Mi
+          << std::setw(2) << std::setfill('0') << Mj;
         sub_matrix_pt->sparse_indexed_output(blockname.str());
         delete sub_matrix_pt;
         sub_matrix_pt = 0;
@@ -1425,8 +1427,8 @@ this->block_setup(problem_pt,matrix_pt,block_setup_bcpl);
       {
         std::stringstream blockname;
         blockname << "vmm_"<< currentsetting<< "_"
-          << setw(2) << setfill('0') << required_block
-          << setw(2) << setfill('0') << required_block;
+          << std::setw(2) << std::setfill('0') << required_block
+          << std::setw(2) << std::setfill('0') << required_block;
         inv_v_mass_pt->sparse_indexed_output(blockname.str());
         delete inv_v_mass_pt;
       }
@@ -1512,7 +1514,7 @@ this->block_setup(problem_pt,matrix_pt,block_setup_bcpl);
   if(Doc_time)
   {
     double t_norm_ax_time = t_norm_ax_finish - t_norm_ax_start;
-    cout << "t_norm_ax_time: " << t_norm_ax_time << std::endl;
+    std::cout << "t_norm_ax_time: " << t_norm_ax_time << std::endl;
   }
 
   // Set Scaling_sigma
@@ -1545,10 +1547,10 @@ this->block_setup(problem_pt,matrix_pt,block_setup_bcpl);
 #endif
 
 
-  std::streamsize cout_precision = cout.precision();
-  cout << "RAYSIGMA: " << std::setprecision(15) << Scaling_sigma
+  std::streamsize cout_precision = std::cout.precision();
+  std::cout << "RAYSIGMA: " << std::setprecision(15) << Scaling_sigma
                        << std::setprecision(cout_precision)
-                       << endl;
+                       << std::endl;
 
   ///////////////////////////////////////////////////////////////////////////
   // We extract the velocity blocks then create the augmented fluid matrix.//
@@ -2176,7 +2178,7 @@ this->block_setup(problem_pt,matrix_pt,block_setup_bcpl);
   if(Doc_time)
   {
     double t_w_prec_time = t_w_prec_finish - t_w_prec_start;
-    cout << "t_w_prec_time: "
+    std::cout << "t_w_prec_time: "
       << t_w_prec_time << "\n";
   }
 
