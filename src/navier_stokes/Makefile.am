@@ -7,7 +7,9 @@ sources =  \
 navier_stokes_elements.cc \
 refineable_navier_stokes_elements.cc \
 Tnavier_stokes_elements.cc \
+constrained_navier_stokes_preconditioners.cc \
 navier_stokes_preconditioners.cc 
+
 
 # fluid_traction_elements.cc 
 
@@ -24,6 +26,7 @@ navier_stokes_preconditioners.h \
 navier_stokes_surface_power_elements.h \
 navier_stokes_surface_drag_torque_elements.h \
 navier_stokes_flux_control_elements.h \
+constrained_navier_stokes_preconditioners.h \
 impose_parallel_outflow_element.h
 
 # Template only files. These should be included in include directory
