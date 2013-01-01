@@ -293,7 +293,11 @@ namespace oomph
 //   }
    
    /// Setup the preconditioner
-   void setup(Problem* problem_pt, DoubleMatrixBase* matrix_pt);
+   void setup();
+
+  /// \short for some reason we have to remind the compiler that there is a
+  /// setup() function in Preconditioner base class.
+  using Preconditioner::setup;
 
    /// Apply preconditioner to Vector r
    void preconditioner_solve(const DoubleVector&r, DoubleVector &z);
@@ -705,8 +709,7 @@ namespace oomph
      CRDoubleMatrix*& inv_p_mass_pt, 
      CRDoubleMatrix*& inv_v_mass_pt, 
      const bool& do_both,
-     const unsigned& procnumber,
-     Problem* problem_pt);
+     const unsigned& procnumber);
 
    
    /// \short Boolean indicating whether the momentum system preconditioner 
@@ -796,7 +799,8 @@ namespace oomph
    
    
    /// Setup the preconditioner
-   void setup(Problem* problem_pt, DoubleMatrixBase* matrix_pt);
+   void setup();
+
    
    /// Apply preconditioner to r
    void preconditioner_solve(const Vector<double>&r,

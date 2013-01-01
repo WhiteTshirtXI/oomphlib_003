@@ -28,12 +28,14 @@
 //LIC//====================================================================
 
 #include <sstream>
+#include <iomanip>
+#include <ios>
 
 // Oomph-lib includes
 #include "generic.h"
 #include "navier_stokes.h"
 //#include "raymon.h"
-#include "ray.h"
+//#include "ray.h"
 
 // The 2D mesh
 #include "meshes/simple_rectangular_quadmesh.h"
@@ -395,7 +397,7 @@ TiltedCavityProblem<ELEMENT>::TiltedCavityProblem
   } // for(unsigned e=0;e<n_el;e++)
 
  //Assgn equation numbers
- cout << "\n equation numbers : "<< assign_eqn_numbers() << std::endl;
+ std::cout << "\n equation numbers : "<< assign_eqn_numbers() << std::endl;
 
  ////// Build the preconditioner
  LagrangeEnforcedflowPreconditioner* prec_pt=new LagrangeEnforcedflowPreconditioner;
@@ -542,7 +544,7 @@ void TiltedCavityProblem<ELEMENT>::doc_solution(DocInfo& doc_info)
 {
   if(doc_info.is_doc_solution_enabled())
   {
-    ofstream some_file;
+    std::ofstream some_file;
     char filename[100];
 
     // Number of plot points
@@ -674,25 +676,25 @@ create_impenetrable_lagrange_elements(const unsigned &b,
 
 
 
-int str2int(const string &str)
+int str2int(const std::string &str)
 {
-  stringstream ss(str);
+  std::stringstream ss(str);
   int n;
   ss >> n;
   return n;
 }
 
-unsigned str2unsigned(const string &str)
+unsigned str2unsigned(const std::string &str)
 {
-  stringstream ss(str);
+  std::stringstream ss(str);
   unsigned n;
   ss >> n;
   return n;
 }
 
-double str2double(const string &str)
+double str2double(const std::string &str)
 {
-  stringstream ss(str);
+  std::stringstream ss(str);
   double n;
   ss >> n;
   return n;
@@ -798,7 +800,7 @@ cout << "Visc: " << myvar.Vis_str << " Prec: " << myvar.Prec << endl;
       std::cout << "Do not recognise W: " << myvar.W_solver << "\n"
                 << "Exact preconditioning = 0\n"
                 << "AMG = 1\n"
-                << "Using default: Exact (W_solver = 0)"<< endl;
+                << "Using default: Exact (W_solver = 0)"<< std::endl;
   }  // switch
  } // if
  // Set the string to identify the preconditioning,
@@ -840,7 +842,7 @@ cout << "Visc: " << myvar.Vis_str << " Prec: " << myvar.Prec << endl;
       std::cout << "Do not recognise P: " << myvar.P_solver << "\n"
                 << "Exact preconditioning = 0\n"
                 << "AMG = 1\n"
-                << "Using default: Exact P solve (P_solver = 0)"<< endl;
+                << "Using default: Exact P solve (P_solver = 0)"<< std::endl;
   }  // switch
  } // if
  // Set the string to identify the preconditioning,
@@ -869,7 +871,7 @@ cout << "Visc: " << myvar.Vis_str << " Prec: " << myvar.Prec << endl;
       std::cout << "Do not recognise F: " << myvar.F_solver << "\n"
                 << "Exact preconditioning = 0\n"
                 << "AMG = 1\n"
-                << "Using default: Exact F solve (F_solver = 0)"<< endl;
+                << "Using default: Exact F solve (F_solver = 0)"<< std::endl;
   }  // switch
  } // if
 
@@ -1029,7 +1031,7 @@ cout << "Visc: " << myvar.Vis_str << " Prec: " << myvar.Prec << endl;
      problem.doc_solution(doc_info);
 
      // We now output the iteration and time.
-     Vector<Vector<pair<unsigned, double> > > iters_times
+     Vector<Vector<std::pair<unsigned, double> > > iters_times
        = doc_info.iterations_and_times();
 
      // Below outputs the iteration counts and time.
@@ -1060,8 +1062,8 @@ cout << "Visc: " << myvar.Vis_str << " Prec: " << myvar.Prec << endl;
        // Print to one decimal place if the average is not an exact
        // integer. Ohterwise we print normally.
        ((unsigned(average_its*10))%10)?
-         std::cout << "\t"<< fixed << setprecision(1)
-         << average_its << "(" << nnewtonstep << ")" << endl:
+         std::cout << "\t"<< std::fixed << std::setprecision(1)
+         << average_its << "(" << nnewtonstep << ")" << std::endl:
          std::cout << "\t"<< average_its << "(" << nnewtonstep << ")" << std::endl;
 
      }
@@ -1085,7 +1087,7 @@ cout << "Visc: " << myvar.Vis_str << " Prec: " << myvar.Prec << endl;
 
        // Print to one decimal place if the average is not an exact
        // integer. Ohterwise we print normally.
-       std::cout << "\t"<< average_time << "(" << nnewtonstep << ")" << endl;
+       std::cout << "\t"<< average_time << "(" << nnewtonstep << ")" << std::endl;
      } // for timesteps
 /*
  // Output linear solver time
@@ -1153,7 +1155,7 @@ cout << "Visc: " << myvar.Vis_str << " Prec: " << myvar.Prec << endl;
    problem.doc_solution(doc_info);
 
    // We now output the iteration and time.
-   Vector<Vector<pair<unsigned, double> > > iters_times
+   Vector<Vector<std::pair<unsigned, double> > > iters_times
      = doc_info.iterations_and_times();
 
    // Below outputs the iteration counts and time.
@@ -1184,8 +1186,8 @@ cout << "Visc: " << myvar.Vis_str << " Prec: " << myvar.Prec << endl;
      // integer. Otherwise we print normally.
      std::streamsize cout_precision = std::cout.precision();
      ((unsigned(average_its*10))%10)?
-       std::cout << "\t"<< fixed << std::setprecision(1)
-       << average_its << "(" << nnewtonstep << ")" << endl:
+       std::cout << "\t"<< std::fixed << std::setprecision(1)
+       << average_its << "(" << nnewtonstep << ")" << std::endl:
        std::cout << "\t"<< average_its << "(" << nnewtonstep << ")" << std::endl;
      std::cout << std::setprecision(cout_precision);
 
@@ -1210,7 +1212,7 @@ cout << "Visc: " << myvar.Vis_str << " Prec: " << myvar.Prec << endl;
 
      // Print to one decimal place if the average is not an exact
      // integer. Otherwise we print normally.
-     std::cout << "\t"<< average_time << "(" << nnewtonstep << ")" << endl;
+     std::cout << "\t"<< average_time << "(" << nnewtonstep << ")" << std::endl;
    }
    /*
    // Output linear solver time

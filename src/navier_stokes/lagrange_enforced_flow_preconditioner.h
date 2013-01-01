@@ -171,11 +171,11 @@ class LagrangeEnforcedflowPreconditioner
   }
 
   /// Setup method for the LagrangeEnforcedflowPreconditioner.
-  void setup(Problem* problem_pt, DoubleMatrixBase* matrix_pt);
+  void setup();
 
   /// \short Get the infinity norm of a matrix.
   ///  The matrix may be composed of several matrices.
-  void get_inf_norm(DenseMatrix<CRDoubleMatrix* > &matrix_pt,
+  void get_inf_norm(DenseMatrix<CRDoubleMatrix* > &in_matrix_pt,
                     double &max_row_value);
 
 
@@ -384,8 +384,7 @@ class LagrangeEnforcedflowPreconditioner
     CRDoubleMatrix*& inv_p_mass_pt,
     CRDoubleMatrix*& inv_v_mass_pt,
     const bool& do_both,
-    const unsigned& procnumber,
-    Problem* problem_pt);
+    const unsigned& procnumber);
 
 
   void use_default_norm_of_f_scaling()
@@ -655,11 +654,11 @@ class LagrangeEnforcedflowPreconditioner
 
 
   void LagrangeEnforcedflowPreconditioner::get_inf_norm(DenseMatrix<CRDoubleMatrix* >
-                                                     &matrix_pt,
+                                                     &in_matrix_pt,
                                                    double &max_row_value)
   {
-    unsigned long matrix_nrow = matrix_pt.nrow();
-    unsigned long matrix_ncol = matrix_pt.ncol();
+    unsigned long matrix_nrow = in_matrix_pt.nrow();
+    unsigned long matrix_ncol = in_matrix_pt.ncol();
 
     max_row_value = 0.0;
     //unsigned test_i = 0;
@@ -667,7 +666,7 @@ class LagrangeEnforcedflowPreconditioner
     for(unsigned row_block = 0; row_block < matrix_nrow; row_block++)
     {
       // Get the number of rows in this row_block from the first block.
-      unsigned long block_nrow_local = matrix_pt(row_block,0)->nrow_local();
+      unsigned long block_nrow_local = in_matrix_pt(row_block,0)->nrow_local();
 
       // Loop through the number of local rows
       for(unsigned i = 0; i < block_nrow_local; i++)
@@ -676,7 +675,7 @@ class LagrangeEnforcedflowPreconditioner
         // Loop through the column blocks on this row:
         for(unsigned column_block = 0; column_block < matrix_ncol; column_block++)
         {
-          CRDoubleMatrix* current_block_pt = matrix_pt(row_block,column_block);
+          CRDoubleMatrix* current_block_pt = in_matrix_pt(row_block,column_block);
           double* current_block_values = current_block_pt->value();
           //int* current_block_column_indicies = current_block_pt->column_index();
           int* current_block_row_start = current_block_pt->row_start();
@@ -879,8 +878,7 @@ class LagrangeEnforcedflowPreconditioner
  //========================================================================
  /// Setup method for the LagrangeEnforcedflowPreconditioner.
  //========================================================================
- void LagrangeEnforcedflowPreconditioner::setup(Problem* problem_pt,
-                                           DoubleMatrixBase* matrix_pt)
+ void LagrangeEnforcedflowPreconditioner::setup()
  {
 
   // For debugging
@@ -979,7 +977,7 @@ class LagrangeEnforcedflowPreconditioner
   // set the mesh
   for(unsigned mesh_i = 0; mesh_i < nmesh; mesh_i++)
   {
-    this->set_mesh(mesh_i,problem_pt,Meshes_pts[mesh_i]);
+    this->set_mesh(mesh_i,problem_pt(),Meshes_pts[mesh_i]);
   }
   
   // Reset some variables:
@@ -1227,7 +1225,7 @@ this->block_setup(block_setup_bcpl);
 
   // Recast Jacobian matrix to CRDoubleMatrix
 #ifdef PARANOID
-  CRDoubleMatrix* cr_matrix_pt = dynamic_cast<CRDoubleMatrix*>(matrix_pt);
+  CRDoubleMatrix* cr_matrix_pt = dynamic_cast<CRDoubleMatrix*>(matrix_pt());
   if (cr_matrix_pt==0)
   {
     std::ostringstream error_message;
@@ -1238,7 +1236,7 @@ this->block_setup(block_setup_bcpl);
                         OOMPH_EXCEPTION_LOCATION);
   }
 #else
-  CRDoubleMatrix* cr_matrix_pt = static_cast<CRDoubleMatrix*>(matrix_pt);
+  CRDoubleMatrix* cr_matrix_pt = static_cast<CRDoubleMatrix*>(matrix_pt());
 #endif
 
 
@@ -1422,7 +1420,7 @@ this->block_setup(block_setup_bcpl);
       unsigned required_block = dof_type_i; //Doftype_list_vpl[dof_type_i];
       assemble_inv_press_and_veloc_mass_matrix_diagonal
         (inv_p_mass_pt, inv_v_mass_pt,
-         do_both, required_block,problem_pt);
+         do_both, required_block);
       //if(Doc_info->is_doc_prec_data_enabled())
       {
         std::stringstream blockname;
@@ -1653,7 +1651,7 @@ this->block_setup(block_setup_bcpl);
     unsigned long l_i_nrow_global = mm_pts[0]->nrow();
   
     LinearAlgebraDistribution* new_distribution_pt
-      = new LinearAlgebraDistribution(problem_pt->communicator_pt(),
+      = new LinearAlgebraDistribution(problem_pt()->communicator_pt(),
                                       l_i_nrow_global,distributed);
 
     // Create both the w_i and inv_w_i matrices.
@@ -1928,7 +1926,7 @@ this->block_setup(block_setup_bcpl);
     {
       Navier_stokes_preconditioner_pt = new SuperLUPreconditioner;
     }
-    Navier_stokes_preconditioner_pt->setup(problem_pt,f_aug_pt);
+    Navier_stokes_preconditioner_pt->setup(problem_pt(),f_aug_pt);
     delete f_aug_pt;
     f_aug_pt = 0;
   }
@@ -2137,7 +2135,7 @@ this->block_setup(block_setup_bcpl);
       ->set_prec_blocks(f_aug_ptrs);
 
     Navier_stokes_block_preconditioner_pt
-      ->setup(problem_pt,matrix_pt);
+      ->setup(problem_pt(),matrix_pt());
 
     //delete prec_blocks[0];
     //delete prec_blocks[1];
@@ -2167,7 +2165,7 @@ this->block_setup(block_setup_bcpl);
         W_preconditioner_pts[l_i] = new SuperLUPreconditioner;
       }
 
-      W_preconditioner_pts[l_i]->setup(problem_pt,w_pts(0,l_i));
+      W_preconditioner_pts[l_i]->setup(problem_pt(),w_pts(0,l_i));
     }
     else
     {
@@ -2221,7 +2219,7 @@ this->block_setup(block_setup_bcpl);
   CRDoubleMatrix*& inv_p_mass_pt,
   CRDoubleMatrix*& inv_v_mass_pt,
   const bool& do_both,
-  const unsigned& procnumber,Problem* problem_pt)
+  const unsigned& procnumber)
  {
   int pronumber = (int)procnumber;
   // determine the velocity rows required by this processor

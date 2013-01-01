@@ -144,7 +144,7 @@ namespace oomph
 /// this preconditioner needs a CRDoubleMatrix.
 //============================================================================
  void ConstrainedNavierStokesSchurComplementPreconditioner::
- setup(Problem* problem_pt, DoubleMatrixBase* matrix_pt)
+ setup()
  {
 
   // For debugging...
@@ -191,14 +191,14 @@ namespace oomph
 #endif
 
   // set the mesh
-  this->set_mesh(0,problem_pt,Navier_stokes_mesh_pt);
+  this->set_mesh(0,Navier_stokes_mesh_pt);
 
   // Get blocks
   // ----------
 
   // In comes the current Jacobian. Recast it to a CR double matrix;
   // shout if that can't be done.
-  CRDoubleMatrix* cr_matrix_pt = dynamic_cast<CRDoubleMatrix*>(matrix_pt);
+  CRDoubleMatrix* cr_matrix_pt = dynamic_cast<CRDoubleMatrix*>(matrix_pt());
 
 
 #ifdef PARANOID
@@ -214,10 +214,11 @@ namespace oomph
    }
 #endif
 
+
   if (doc_block_matrices)
    {
     std::stringstream junk;
-    junk << "j_matrix" << problem_pt->communicator_pt()->my_rank()
+    junk << "j_matrix" << problem_pt()->communicator_pt()->my_rank()
          << ".dat";
     oomph_info << "About to output " << junk.str() << std::endl;
     cr_matrix_pt->sparse_indexed_output_with_offset(junk.str());
@@ -245,7 +246,7 @@ namespace oomph
 
   Dim = Navier_stokes_mesh_pt->finite_element_pt(0)->dim();
 
-  this->block_setup(problem_pt,matrix_pt);
+  this->block_setup();
 
   for (unsigned i = 0; i < 5; i++) 
   {
@@ -305,7 +306,7 @@ pause("BUBBLE POP");
   if (doc_block_matrices)
    {
     std::stringstream junk;
-    junk << "b_matrix" << problem_pt->communicator_pt()->my_rank()
+    junk << "b_matrix" << problem_pt()->communicator_pt()->my_rank()
          << ".dat";
     b_pt->sparse_indexed_output_with_offset(junk.str());
     oomph_info << "Done output of " << junk.str() << std::endl;
@@ -337,7 +338,7 @@ pause("BUBBLE POP");
  //      required_block_number,problem_pt);
      assemble_inv_press_and_veloc_mass_matrix_diagonal
       (inv_p_mass_pt, inv_vmm_pts(0,vdof_i), do_both, 
-       vdof_i,problem_pt);
+       vdof_i);
 
   }
    // pause("doumooo"); 
@@ -370,7 +371,7 @@ pause("BUBBLE POP");
   //cout << " total_global_nrow = " << total_nrow_global << endl;
   
   LinearAlgebraDistribution* new_distribution_pt 
-    = new LinearAlgebraDistribution(problem_pt->communicator_pt(),
+    = new LinearAlgebraDistribution(problem_pt()->communicator_pt(),
                                     total_nrow_global,distributed);
 
   // no. values = total_nrow_global since:
@@ -428,7 +429,7 @@ pause("BUBBLE POP");
    {
     std::stringstream junk;
     junk << "inv_v_mass_matrix" 
-         << problem_pt->communicator_pt()->my_rank()
+         << problem_pt()->communicator_pt()->my_rank()
          << ".dat";
     inv_v_mass_pt->sparse_indexed_output_with_offset(junk.str());
     oomph_info << "Done output of " << junk.str() << std::endl;
@@ -448,15 +449,17 @@ pause("BUBBLE POP");
     oomph_info << "Time to get Bt [sec]: "
                << t_get_Bt_time << std::endl;
    }
+  
 
   if (doc_block_matrices)   
    {
     std::stringstream junk;
-    junk << "bt_matrix" << problem_pt->communicator_pt()->my_rank()
+    junk << "bt_matrix" << problem_pt()->communicator_pt()->my_rank()
          << ".dat";
     bt_pt->sparse_indexed_output_with_offset(junk.str());
     oomph_info << "Done output of " << junk.str() << std::endl;
    }
+  
   
   // Build pressure Poisson matrix 
   CRDoubleMatrix* p_matrix_pt = new CRDoubleMatrix;
@@ -523,7 +526,7 @@ pause("BUBBLE POP");
     
     // Now extract the pressure pressure block
     CRDoubleMatrix* fp_matrix_pt=0;
-    this->get_block(1,1,&full_fp_matrix,fp_matrix_pt);
+    this->get_block_other_matrix(1,1,&full_fp_matrix,fp_matrix_pt);
     double t_get_Fp_finish = TimingHelpers::timer();
     if(Doc_time)
      {
@@ -638,14 +641,14 @@ pause("BUBBLE POP");
   if (doc_block_matrices)
    {
     std::stringstream junk;
-    junk << "p_matrix" << problem_pt->communicator_pt()->my_rank()
+    junk << "p_matrix" << problem_pt()->communicator_pt()->my_rank()
          << ".dat";
     p_matrix_pt->sparse_indexed_output_with_offset(junk.str());
     oomph_info << "Done output of " << junk.str() << std::endl;
    }
  //  pause("P_prec setup"); 
    
-  P_preconditioner_pt->setup(problem_pt, p_matrix_pt);
+  P_preconditioner_pt->setup(problem_pt(), p_matrix_pt);
   delete p_matrix_pt;
   p_matrix_pt=0;
   double t_p_prec_finish = TimingHelpers::timer();
@@ -684,12 +687,12 @@ pause("BUBBLE POP");
     // NOTE: I HAVE TO CHANGE THIS SO IT USES MY AUGMENTED MATRIX
  //   pause("F_prec setup"); 
     
-    F_block_preconditioner_pt->setup(problem_pt,matrix_pt);
+    F_block_preconditioner_pt->setup(problem_pt(),matrix_pt());
    }
   // otherwise F is not a block preconditioner
   else
    {
-    F_preconditioner_pt->setup(problem_pt,f_pt);
+    F_preconditioner_pt->setup(problem_pt(),f_pt);
     //delete f_pt;
    }
   double t_f_prec_finish = TimingHelpers::timer();
@@ -1808,7 +1811,7 @@ pause("BUBBLE POP");
   CRDoubleMatrix*& inv_p_mass_pt,
   CRDoubleMatrix*& inv_v_mass_pt,
   const bool& do_both,
-  const unsigned& procnumber,Problem* problem_pt)
+  const unsigned& procnumber)
  {
   int pronumber = (int)procnumber;
   // determine the velocity rows required by this processor
@@ -1827,7 +1830,7 @@ pause("BUBBLE POP");
    {
     v_values[i] = 0.0;
    }
- 
+
   // Equivalent information for pressure mass matrix (only needed for 
   // Fp version)
   unsigned p_first_row=0;
@@ -1855,13 +1858,22 @@ pause("BUBBLE POP");
 
   // if the problem is distributed
   bool distributed = false;
-  
+#ifdef OOMPH_HAS_MPI
+  if (problem_pt()->distributed() ||
+      this->master_distribution_pt()->distributed())
+   {
+    distributed = true;
+   }
+#endif
+
   if (distributed)
    {
    // To do
    }
+  // or if the problem is not distributed
   else
    {
+
     // find number of elements
     unsigned n_el = Navier_stokes_mesh_pt->nelement();
     
@@ -1874,10 +1886,11 @@ pause("BUBBLE POP");
     // get the contribution for each element
     for (unsigned e = 0; e < n_el; e++)
      {
+
       // Get element
       //GeneralisedElement* el_pt=problem_pt->mesh_pt(0)->element_pt(e);
       GeneralisedElement* el_pt=Navier_stokes_mesh_pt->element_pt(e);
-
+      
       // find number of degrees of freedom in the element
       // (this is slightly too big because it includes the
       // pressure dofs but this doesn't matter)
@@ -1885,8 +1898,8 @@ pause("BUBBLE POP");
       
       // allocate local storage for the element's contribution to the
       // pressure and velocity mass matrix diagonal
-      Vector<double> el_vmm_diagonal(el_dof);
-      Vector<double> el_pmm_diagonal(el_dof);
+      Vector<double> el_vmm_diagonal(el_dof,0.0);
+      Vector<double> el_pmm_diagonal(el_dof,0.0);
       
       dynamic_cast<TemplateFreeNavierStokesEquationsBase*>(el_pt)->
        get_pressure_and_velocity_mass_matrix_diagonal( 
