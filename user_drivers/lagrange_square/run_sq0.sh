@@ -1,7 +1,7 @@
 #!/bin/bash
 
-cd /home/mly/v327/src/ && make && make install && \
-cd /home/mly/v327/user_drivers/lagrange_square/ && \
+#cd /home/mly/v327/src/ && make && make install && \
+#cd /home/mly/v327/user_drivers/lagrange_square/ && \
 make square0 && \
 
 ./square0 --w_solver 0 --ns_solver 1 --p_solver 0 --f_solver 3 --visc 0 \

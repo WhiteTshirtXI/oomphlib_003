@@ -9,4 +9,6 @@
 #include<navier_stokes/navier_stokes_surface_drag_torque_elements.h> 
 #include<navier_stokes/navier_stokes_flux_control_elements.h> 
 #include<navier_stokes/constrained_navier_stokes_preconditioners.h> 
+#include<navier_stokes/lagrange_enforced_flow_preconditioner.h> 
+#include<navier_stokes/impose_impenetrability_element.h> 
 #include<navier_stokes/impose_parallel_outflow_element.h> 
