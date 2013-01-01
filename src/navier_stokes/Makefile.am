@@ -27,6 +27,7 @@ navier_stokes_surface_power_elements.h \
 navier_stokes_surface_drag_torque_elements.h \
 navier_stokes_flux_control_elements.h \
 constrained_navier_stokes_preconditioners.h \
+impose_impenetrability_element \
 impose_parallel_outflow_element.h
 
 # Template only files. These should be included in include directory
