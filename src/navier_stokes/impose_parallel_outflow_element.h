@@ -208,10 +208,8 @@ namespace oomph
         }
 
        // compute the normal vector
-       outer_unit_normal(ipt,norm_vec);
+       tangent_and_outer_unit_normal(ipt,tang_vec,norm_vec);
 
-       // compute the tangantial vectors
-       get_tang_vec(dim_el,norm_vec,tang_vec );
 
        // Assemble residuals and jacobian
 
@@ -311,70 +309,140 @@ namespace oomph
         }
       }
     }
-   
-   /// function to compute the tangantial vectors from the normal vector
-   void get_tang_vec(const unsigned &dim_el, const Vector<double> &N,
-                     Vector<Vector<double> > &T)
-    {
-     T.resize(dim_el,Vector<double>(dim_el+1));
-     double a,b,c;
-     switch(dim_el)
-      {
-      case 1:
-       T[0][0]=-N[1];
-       T[0][1]=N[0];
-       break;
-      case 2:
-       a=N[0];
-       b=N[1];
-       c=N[2]; 
-      
-       if(a!=0.0 || b!=0.0)
-       	{
-         double a_sq=a*a;
-         double b_sq=b*b;
-         double c_sq=c*c;
-         
-         T[0][0]=-b/sqrt(a_sq+b_sq);
-         T[0][1]= a/sqrt(a_sq+b_sq);
-         T[0][2]=0;
-	  
-         double z=(a_sq +b_sq)
-          /sqrt(a_sq*c_sq +b_sq*c_sq +(a_sq +b_sq)*(a_sq +b_sq)) ;
-	  
-         T[1][0]=-(a*c*z)/(a_sq + b_sq) ;
-         T[1][1]= -(b*c*z)/(a_sq + b_sq);
-         T[1][2]= z;
-         // NB : we didn't use the fact that N is normalized,
-         // that's why we have these insimplified formulas
-        }
-       else if (c!=0.0)
-	{
-         T[0][0]=1.0;
-         T[0][1]= 0.0;	  
-         T[0][2]= 0.0;
-	  
-         T[1][0]=0.0;
-         T[1][1]= 1.0;	  
-         T[1][2]= 0.0;
-	}
-       else
-	{
-         throw 
-          OomphLibError("You have a zero normal vector!! ",
-                        "ImposeParallelOutflowElement::get_tang_vec",
-                        OOMPH_EXCEPTION_LOCATION);
-	}
-       break;
 
-      default:
-       throw 
-        OomphLibError(
-         " unexcpected lagrange elements's dimension ",
-         "ImposeParallelOutflowElement::get_tang_vec",
-         OOMPH_EXCEPTION_LOCATION);
-      }
-    }
+
+ /// \short The number of "blocks" that degrees of freedom in this element
+ /// are sub-divided into: Just the solid degrees of freedom themselves.
+ unsigned ndof_types()
+ {
+  // This is the elemental dimension. So in a 
+  // 2D problem this is 1, which corresponds
+  // to the single Lagrange multipler introduced
+  // by this element.
+  return (this->dim() + additional_ndof_types());
+ }
+
+ unsigned additional_ndof_types()
+ {
+   // Additional dof types for the constained bulk velocities
+   // two velocities for a 2D problem, 3 for 3D.
+   return (this->dim() + 1);
+ }
+ 
+ /// \short Create a list of pairs for all unknowns in this element,
+ /// so that the first entry in each pair contains the global equation
+ /// number of the unknown, while the second one contains the number
+ /// of the "block" that this unknown is associated with.
+ /// (Function can obviously only be called if the equation numbering
+ /// scheme has been set up.) 
+ void get_dof_numbers_for_unknowns(
+  std::list<std::pair<unsigned long,unsigned> >& block_lookup_list)
+ {
+  
+  // temporary pair (used to store block lookup prior to being added to list)
+  std::pair<unsigned,unsigned> block_lookup;
+  
+  // number of nodes
+  const unsigned n_node = this->nnode();
+  //Loop over directions in this Face(!)Element
+  unsigned dim_el = this->dim();
+  for(unsigned i=0;i<dim_el;i++)
+  {     
+    //Loop over the nodes
+    for(unsigned j=0;j<n_node;j++)
+    {          
+      // Cast to a boundary node
+      BoundaryNodeBase *bnod_pt = 
+       dynamic_cast<BoundaryNodeBase*>(node_pt(j));
+      
+      // Local eqn number:
+      int local_eqn=nodal_local_eqn
+       (j,bnod_pt->index_of_first_value_assigned_by_face_element(Id)+i);
+      if (local_eqn>=0)
+      {
+        // store block lookup in temporary pair: First entry in pair
+        // is global equation number; second entry is block type
+        // We assume that the first 2(3) types are fluid dof types in
+        // 2(3) spatial dimensions:
+        //
+        // 0  1  2  3  8 
+        // up vp wp L1 L2]
+        // So we add the additional_ndof_types() which in this case
+        // corresponds to the number of spatial dimensions of the problem.
+        block_lookup.first = this->eqn_number(local_eqn);
+        block_lookup.second = i +additional_ndof_types();
+        
+        //cout << "Face L: " << block_lookup.first << " doftype: " << block_lookup.second << std::endl;
+        // add to list
+        block_lookup_list.push_front(block_lookup);
+      } // if local_eqn > 0
+    } // for loop over nodes
+  } // for loop over directions
+ //pause("done one face element!");
+
+  //*
+  // Now we do the bulk elements. Each velocity component of a constrained dof
+  // of a different type of FaceElement has a different dof_type. E.g. Consider
+  // the Navier Stokes equations in three spatial dimensions with parallel
+  // outflow (using ImposeParallelOutflowElement with Boundary_id = 1) and
+  // tangential flow (using ImposeTangentialFlowElement with Boundary_id = 2)
+  // imposed along two different boundaries. 
+  // There will be 10 dof types: 
+  // 0 1 2 3 4  5  6  7  8  9 
+  // u v w p u1 v1 w1 u2 v2 w2
+
+  // Loop over only the nodes of the "bulk" element that are associated 
+  // with this "face" element.
+  //cout << "n_node: " << n_node << endl;
+  unsigned const bulk_dim = dim_el + 1;
+  //cout << "bulk_dim: " << bulk_dim << endl;
+  for(unsigned node_i = 0; node_i < n_node; node_i++)
+  {
+    // Loop over the velocity components
+    for(unsigned velocity_i = 0; velocity_i < bulk_dim; velocity_i++)
+    {
+      // Calculating the offset for this Boundary_id.
+      // 0 1 2 3 4  5  6  7  8  9
+      // u v w p u1 v1 w1 u2 v2 w2
+      // 
+      // for the first surface mesh, offset = 4
+      // for the second surface mesh, offset = 7
+      //unsigned offset = bulk_dim * Boundary_id + 1;
+      
+      // The local equation number is required to check if the value is pinned,
+      // if it is not pinned, the local equation number is required to get the
+      // global equation number.
+      int local_eqn = Bulk_element_pt
+                      ->nodal_local_eqn(Bulk_node_number[node_i],
+                                        velocity_i);
+
+      // ignore pinned values
+      if(local_eqn >= 0)
+      {
+        // store the block loopup in temporary pair: First entry in pair
+        // is the global equation number; second entry is the block type
+        block_lookup.first = Bulk_element_pt->eqn_number(local_eqn);
+        block_lookup.second = velocity_i;
+        block_lookup_list.push_front(block_lookup);
+
+        //RRRcout << "Face v: " <<  block_lookup.first
+        //RRR     << ", doftype: " << block_lookup.second << endl;
+
+      } // ignore pinned nodes "if(local-eqn>=0)"
+    } // for loop over the velocity components
+  } //  for loop over bulk nodes only
+  //pause("Done one face elemento!");
+  // */
+ } // get_dof_numbers_for_unknowns
+ 
+ // hierher kill this
+ void fill_in_contribution_to_jacobian_and_mass_matrix(
+  Vector<double> &residuals,
+  DenseMatrix<double> &jacobian, DenseMatrix<double> &mass_matrix)
+ {
+  std::cout << "hierher kill this \n";
+ }
+ 
   };
 
 }
