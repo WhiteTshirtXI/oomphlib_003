@@ -880,7 +880,6 @@ class LagrangeEnforcedflowPreconditioner
  //========================================================================
  void LagrangeEnforcedflowPreconditioner::setup()
  {
-
   // For debugging
   //bool doc_block_matrices = false;
   bool Doc_time = false;
@@ -888,7 +887,6 @@ class LagrangeEnforcedflowPreconditioner
   // clean
   this->clean_up_memory();
   
-
   // To construct the required block structure for the preconditoner, we
   // require only the
   // (1) spatial dimension of the problem and
@@ -920,7 +918,7 @@ class LagrangeEnforcedflowPreconditioner
 
   // Store the number of meshes locally.
   unsigned nmesh = Meshes_pts.size();
-
+  
 #ifdef PARANOID
   // Paranoid check that meshes have been set.
   if(nmesh == 0)
@@ -929,7 +927,7 @@ class LagrangeEnforcedflowPreconditioner
     error_message << "There are no meshes set. Please call set_meshes(...)"
                   << std::endl;
     throw OomphLibError(error_message.str(),
-        "LagrangeEnforcedflowPreconditioner::setup(...)",
+        "LagrangeEnforcedflowPreconditioner::setup()",
         OOMPH_EXCEPTION_LOCATION);
   }
 
@@ -942,7 +940,7 @@ class LagrangeEnforcedflowPreconditioner
       error_message << "The Meshes_pts[" << mesh_i << "] must be set." 
                     << std::endl;
       throw OomphLibError(error_message.str(),
-                          "LagrangeEnforcedflowPreconditioner::setup(...)",
+                          "LagrangeEnforcedflowPreconditioner::setup()",
                           OOMPH_EXCEPTION_LOCATION);
     }
   }
@@ -959,6 +957,9 @@ class LagrangeEnforcedflowPreconditioner
   // The dimension of the nodes in the first element in the bulk mesh.
   unsigned nodal_dimension = Meshes_pts[0]->finite_element_pt(0)
                                          ->nodal_dimension();
+  
+  // Check if the first mesh is the "bulk" mesh.
+  // Here we assume only one mesh contains "bulk" elements.
   if (elemental_dimension != nodal_dimension) 
   {
     std::ostringstream error_message;
@@ -969,7 +970,7 @@ class LagrangeEnforcedflowPreconditioner
                   << "Please re-assign the meshes vector." << std::endl;
 
     throw OomphLibError(error_message.str(),
-                        "LagrangeEnforcedflowPreconditioner::setup(...)",
+                        "LagrangeEnforcedflowPreconditioner::setup()",
                         OOMPH_EXCEPTION_LOCATION);
   }
 #endif
@@ -977,7 +978,7 @@ class LagrangeEnforcedflowPreconditioner
   // set the mesh
   for(unsigned mesh_i = 0; mesh_i < nmesh; mesh_i++)
   {
-    this->set_mesh(mesh_i,problem_pt(),Meshes_pts[mesh_i]);
+    this->set_mesh(mesh_i,Meshes_pts[mesh_i]);
   }
   
   // Reset some variables:
@@ -1074,13 +1075,12 @@ class LagrangeEnforcedflowPreconditioner
                              temp_lagrange_doftypes.end());
   } // end of encapculating
 
-
-//  std::cout << "Doftype_list_bcpl:" << std::endl; 
-//  for (unsigned i = 0; i < Doftype_list_bcpl.size(); i++) 
-//  {
-//    std::cout << Doftype_list_bcpl[i] << std::endl;
-//  }
-//  pause("Done the new doftype list"); 
+  std::cout << "Doftype_list_bcpl:" << std::endl; 
+  for (unsigned i = 0; i < Doftype_list_bcpl.size(); i++) 
+  {
+    std::cout << Doftype_list_bcpl[i] << std::endl;
+  }
+  pause("Done the new doftype list"); 
 
 
 // Testing: ///////////////////////////////////////////////////////////////////
@@ -1115,9 +1115,11 @@ class LagrangeEnforcedflowPreconditioner
   //  0 1 2 9 3  4  5  10  11  6  7  8  12
   // [u v w p up vp wp Lp1 Lp2 ut vt wt Lt1
   //
-  // This is stored in Doftype_list_bcpl, this is passed to block_setup...
+  // This is stored in block_setup_bcpl, this is passed to block_setup...
 
   Vector<unsigned> block_setup_bcpl(N_doftypes,0);
+  
+  // Encapsulate temporary variables
   {
     unsigned temp_index = 0;
     unsigned lagrange_entry = N_velocity_doftypes;
@@ -1139,19 +1141,18 @@ class LagrangeEnforcedflowPreconditioner
     }
   }
 
-//  std::cout << "block_setup_bcpl:" << std::endl; 
-//  for (unsigned i = 0; i < block_setup_bcpl.size(); i++) 
-//  {
-//    std::cout << block_setup_bcpl[i] << std::endl;
-//  }
-//  pause("Done the block_setup_bcpl"); 
+  std::cout << "block_setup_bcpl:" << std::endl; 
+  for (unsigned i = 0; i < block_setup_bcpl.size(); i++) 
+  {
+    std::cout << block_setup_bcpl[i] << std::endl;
+  }
+  pause("Done the block_setup_bcpl"); 
 
 
 //this->block_setup(problem_pt,matrix_pt,block_setup_bcpl);
 this->block_setup(block_setup_bcpl);
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
-
 
 
 
@@ -1406,6 +1407,7 @@ this->block_setup(block_setup_bcpl);
         sub_matrix_pt = 0;
       }//for
     }//for
+pause("Starting to remove cr_matrix_pt"); 
 
     // Now get the mass matrices for LSC solve
 
@@ -1920,7 +1922,8 @@ this->block_setup(block_setup_bcpl);
         f_aug_ptrs(row_i, col_i) = 0;
       }
     }
-
+    pause("Got to here"); 
+    
     // f_aug_pt->sparse_indexed_output("f_aug1");
     if(Navier_stokes_preconditioner_pt == 0)
     {

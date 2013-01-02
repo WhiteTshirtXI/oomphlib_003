@@ -235,62 +235,7 @@ namespace oomph
      BrokenCopy::broken_assign("ConstrainedNavierStokesSchurComplementPreconditioner");
     }
    
-//   // RAYRAY Set the blocks for the Navier Stokes preconditioner
-//   void set_prec_blocks(Vector<CRDoubleMatrix*> &required_prec_blocks)
-//   { 
-//#ifdef PARANOID
-//     if(required_prec_blocks.size() != 3)                                                   
-//     {                                                                           
-//       std::ostringstream error_message;                                         
-//       error_message << "There must be three blocks for the\n"
-//                     << "LSC preconditioner, for F, B and Bt" << std::endl;          
-//       throw OomphLibError(error_message.str(),                                  
-//                          "ConstrainedNavierStokesSchurComplementPreconditioner",                      
-//                          OOMPH_EXCEPTION_LOCATION);                            
-//     }
-//     for (unsigned block_i = 0; block_i < 3; block_i++) 
-//     {
-//       if (required_prec_blocks[block_i] == 0) 
-//       {
-//       std::ostringstream error_message;                                         
-//       error_message << "Block " << block_i << " is not set." << std::endl;
-//       throw OomphLibError(error_message.str(),                                  
-//                          "ConstrainedNavierStokesSchurComplementPreconditioner",                      
-//                          OOMPH_EXCEPTION_LOCATION); 
-//       }
-//     }
-//#endif
-//     Prec_blocks = required_prec_blocks;
-//
-//     // set bool Prec_blocks_has_been_set = true - will I ever have to set it to
-//     // false?
-//   }
-//
-//   // RAYRAY 
-//   void set_master_doftype_ordering(Vector<unsigned> &block_ordering)
-//   {
-//     unsigned ndof_types = this->ndof_types();
-//     unsigned nblocks = block_ordering.size();
-//     // check if this has the same ndof as the ndoftype of this preconditioner.
-//#ifdef PARANOID
-//     if(ndof_types > nblocks)
-//     {
-//       std::ostringstream error_message;                                         
-//       error_message << "The number of blocks in the master preconditioner\n"
-//                     << "must be equal to, or more than, the number of \n"
-//                     << "blocks in the subsidiary preconditioner." 
-//                     << std::endl;
-//       throw OomphLibError(error_message.str(),
-//                          "ConstrainedNavierStokesSchurComplementPreconditioner",
-//                          OOMPH_EXCEPTION_LOCATION); 
-//     }
-//#endif
-//     // Set the Master_doftype_order vector.
-//     Master_doftype_order = block_ordering;
-//     
-//     // Resize it, to cut off the dof types we do not require.
-//     Master_doftype_order.resize(ndof_types);
-//   }
+
    
    /// Setup the preconditioner
    void setup();

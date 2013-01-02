@@ -126,16 +126,8 @@ namespace Hypre_Subsidiary_Preconditioner_Helper
 } 
 #endif            
 
-
-
-
 namespace oomph
 {
-
-
-
-
-
 //========================================================================
 /// \short A Sloping Mesh  class.
 ///
@@ -171,11 +163,7 @@ namespace oomph
      }
    }
  };
-
-
-
-
-} // end of namespace
+} // end of namespace oomph
 
 
 //===start_of_problem_class=============================================
@@ -273,7 +261,6 @@ template<class ELEMENT> // rrrback - changed here.
 TiltedCavityProblem<ELEMENT>::TiltedCavityProblem
 (SquareLagrangeVariables &myvar, DocInfo &doc_info)
 {
-
  Doc_info_pt = &doc_info;
 
  // Assign the boundaries:
@@ -324,23 +311,22 @@ TiltedCavityProblem<ELEMENT>::TiltedCavityProblem
  // free by default -- just pin the ones that have Dirichlet conditions
  // here.
  for(unsigned ibound=0;ibound<num_bound;ibound++)
-  {
-  //if((ibound != po_b)&&(ibound != tf_b))
-  if(ibound != po_b)
-  {
-   unsigned num_nod=Bulk_mesh_pt->nboundary_node(ibound);
+ {
+   //if((ibound != po_b)&&(ibound != tf_b))
+   if(ibound != po_b)
+   {
+     unsigned num_nod=Bulk_mesh_pt->nboundary_node(ibound);
+     for (unsigned inod=0;inod<num_nod;inod++)
+     {
+       // Get node
+       Node* nod_pt=Bulk_mesh_pt->boundary_node_pt(ibound,inod);
 
-   for (unsigned inod=0;inod<num_nod;inod++)
-    {
-     // Get node
-     Node* nod_pt=Bulk_mesh_pt->boundary_node_pt(ibound,inod);
+       nod_pt->pin(0);
+       nod_pt->pin(1);
 
-     nod_pt->pin(0);
-     nod_pt->pin(1);
-
-    }
-  }
-  }
+     }
+   }
+ }
 
  // Inflow on upper half of the Imposed_flow_boundary.
  // Outflow on lower half of the Imposed_flow_boundary.
@@ -400,7 +386,9 @@ TiltedCavityProblem<ELEMENT>::TiltedCavityProblem
  std::cout << "\n equation numbers : "<< assign_eqn_numbers() << std::endl;
 
  ////// Build the preconditioner
- LagrangeEnforcedflowPreconditioner* prec_pt=new LagrangeEnforcedflowPreconditioner;
+ LagrangeEnforcedflowPreconditioner* prec_pt
+   = new LagrangeEnforcedflowPreconditioner;
+ 
  Prec_pt = prec_pt;
 
  Vector<Mesh*> meshes_pt;
@@ -435,10 +423,8 @@ TiltedCavityProblem<ELEMENT>::TiltedCavityProblem
  new ConstrainedNavierStokesSchurComplementPreconditioner;
 
  // The preconditioner for the fluid block:
-
  if(myvar.NS_solver == 0) // Exact solve.
- {
- }
+ {}
  else if(myvar.NS_solver == 1) // LSC
  {
 
@@ -531,10 +517,7 @@ TiltedCavityProblem<ELEMENT>::TiltedCavityProblem
  // Set solver and preconditioner
  Solver_pt->preconditioner_pt() = Prec_pt;
  linear_solver_pt() = Solver_pt;
-
 }
-
-
 
 //==start_of_doc_solution=================================================
 /// Doc the solution
