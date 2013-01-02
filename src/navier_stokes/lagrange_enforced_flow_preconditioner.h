@@ -264,7 +264,6 @@ class LagrangeEnforcedflowPreconditioner
 
     // At this point, all vectors are cleared.
 
-    std::cout << "Using_superlu_ns_preconditioner: " << Using_superlu_ns_preconditioner << std::endl; 
     //pause("done"); 
     
     if(Using_superlu_ns_preconditioner)
@@ -909,13 +908,10 @@ class LagrangeEnforcedflowPreconditioner
   //
   // Then the dimension = 3 and N_doftype_in_mesh = [4, 5, 4].
   //
+  // We calculate these two below:
 
 
-  // Set the meshes. We assume that all sub meshes in the problem is used
-  // for preconditioning. Thus order of the meshes is the same order in the
-  // problem, which is the same order we call "add_sub_mesh(...)" for each
-  // mesh in the problem constructor.
-
+  // Set the meshes. 
   // Store the number of meshes locally.
   unsigned nmesh = Meshes_pts.size();
   
@@ -1075,12 +1071,12 @@ class LagrangeEnforcedflowPreconditioner
                              temp_lagrange_doftypes.end());
   } // end of encapculating
 
-  std::cout << "Doftype_list_bcpl:" << std::endl; 
-  for (unsigned i = 0; i < Doftype_list_bcpl.size(); i++) 
-  {
-    std::cout << Doftype_list_bcpl[i] << std::endl;
-  }
-  pause("Done the new doftype list"); 
+//  std::cout << "Doftype_list_bcpl:" << std::endl; 
+//  for (unsigned i = 0; i < Doftype_list_bcpl.size(); i++) 
+//  {
+//    std::cout << Doftype_list_bcpl[i] << std::endl;
+//  }
+//  pause("Done the new doftype list"); 
 
 
 // Testing: ///////////////////////////////////////////////////////////////////
@@ -1141,12 +1137,12 @@ class LagrangeEnforcedflowPreconditioner
     }
   }
 
-  std::cout << "block_setup_bcpl:" << std::endl; 
-  for (unsigned i = 0; i < block_setup_bcpl.size(); i++) 
-  {
-    std::cout << block_setup_bcpl[i] << std::endl;
-  }
-  pause("Done the block_setup_bcpl"); 
+//  std::cout << "block_setup_bcpl:" << std::endl; 
+//  for (unsigned i = 0; i < block_setup_bcpl.size(); i++) 
+//  {
+//    std::cout << block_setup_bcpl[i] << std::endl;
+//  }
+//  pause("Done the block_setup_bcpl"); 
 
 
 //this->block_setup(problem_pt,matrix_pt,block_setup_bcpl);
@@ -1397,7 +1393,7 @@ this->block_setup(block_setup_bcpl);
       for(unsigned Mj=0; Mj<nblock_types; Mj++)
       {
         CRDoubleMatrix* sub_matrix_pt = 0;
-        this->get_block(Mi,Mj,cr_matrix_pt,sub_matrix_pt);
+        this->get_block(Mi,Mj,sub_matrix_pt);
         std::stringstream blockname;
         blockname << "j_"<< currentsetting<< "_"
           << std::setw(2) << std::setfill('0') << Mi
@@ -1407,7 +1403,6 @@ this->block_setup(block_setup_bcpl);
         sub_matrix_pt = 0;
       }//for
     }//for
-pause("Starting to remove cr_matrix_pt"); 
 
     // Now get the mass matrices for LSC solve
 
@@ -1491,11 +1486,9 @@ pause("Starting to remove cr_matrix_pt");
 //                      cr_matrix_pt,ax_pts(row_i,col_i));
       unsigned required_row_i = row_i * elemental_dimension;
       unsigned required_col_i = col_i * elemental_dimension;
-      this->get_block(required_row_i, required_col_i,
-                      cr_matrix_pt,ax_pts(row_i,col_i));
+      this->get_block(required_row_i, required_col_i,ax_pts(row_i,col_i));
     } // for
   } //  for
-
 
   // Get the norm
   get_inf_norm(ax_pts,ax_norm);
@@ -1565,7 +1558,7 @@ pause("Starting to remove cr_matrix_pt");
     {
 //      this->get_block(Doftype_list_vpl[row_i], Doftype_list_vpl[col_i],
 //                      cr_matrix_pt,v_aug_pt(row_i,col_i));
-      this->get_block(row_i,col_i,cr_matrix_pt,v_aug_pt(row_i,col_i));
+      this->get_block(row_i,col_i,v_aug_pt(row_i,col_i));
     } // for
   } // for
 
@@ -1616,7 +1609,7 @@ pause("Starting to remove cr_matrix_pt");
 //      this->get_block(Doftype_list_vpl[l_doftype], Doftype_list_vpl[col_i],
 //                      cr_matrix_pt,mm_temp_pt);
 
-      this->get_block(l_doftype, col_i, cr_matrix_pt,mm_temp_pt);
+      this->get_block(l_doftype, col_i, mm_temp_pt);
 
       if(mm_temp_pt->nnz() > 0)
       {
@@ -1821,7 +1814,7 @@ pause("Starting to remove cr_matrix_pt");
 //        this->get_block(Doftype_list_vpl[aug_i],
 //                        Doftype_list_vpl[aug_j],
 //                        cr_matrix_pt,aug_pt);
-        this->get_block(aug_i,aug_j,cr_matrix_pt,aug_pt);
+        this->get_block(aug_i,aug_j,aug_pt);
 
         mm_pts[ii]->multiply((*inv_w_pt),(*aug_pt));
         aug_pt->multiply(*mm_pts[jj],(*aug_pt));
@@ -1881,7 +1874,7 @@ pause("Starting to remove cr_matrix_pt");
 //                      cr_matrix_pt,
 //                      f_aug_ptrs(N_velocity_doftypes,col_i));
 
-      this->get_block(N_velocity_doftypes,col_i,cr_matrix_pt,
+      this->get_block(N_velocity_doftypes,col_i,
                       f_aug_ptrs(N_velocity_doftypes,col_i));
    }
 
@@ -1893,7 +1886,7 @@ pause("Starting to remove cr_matrix_pt");
 //                      cr_matrix_pt,
 //                      f_aug_ptrs(row_i,N_velocity_doftypes));
 
-      this->get_block(row_i,N_velocity_doftypes,cr_matrix_pt,
+      this->get_block(row_i,N_velocity_doftypes,
                       f_aug_ptrs(row_i,N_velocity_doftypes));
    }
    // output:
@@ -1922,7 +1915,6 @@ pause("Starting to remove cr_matrix_pt");
         f_aug_ptrs(row_i, col_i) = 0;
       }
     }
-    pause("Got to here"); 
     
     // f_aug_pt->sparse_indexed_output("f_aug1");
     if(Navier_stokes_preconditioner_pt == 0)
@@ -1961,7 +1953,7 @@ pause("Starting to remove cr_matrix_pt");
       //                      cr_matrix_pt,
       //                      f_aug_ptrs(N_velocity_doftypes,col_i));
 
-      this->get_block(N_velocity_doftypes,col_i,cr_matrix_pt,
+      this->get_block(N_velocity_doftypes,col_i,
           f_aug_ptrs(N_velocity_doftypes,col_i));
     }
 
@@ -1973,7 +1965,7 @@ pause("Starting to remove cr_matrix_pt");
       //                      cr_matrix_pt,
       //                      f_aug_ptrs(row_i,N_velocity_doftypes));
 
-      this->get_block(row_i,N_velocity_doftypes,cr_matrix_pt,
+      this->get_block(row_i,N_velocity_doftypes,
           f_aug_ptrs(row_i,N_velocity_doftypes));
     }
 
