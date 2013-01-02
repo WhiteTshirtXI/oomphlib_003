@@ -251,7 +251,7 @@ namespace oomph
   for (unsigned i = 0; i < 5; i++) 
   {
     CRDoubleMatrix* temp_mat_pt = 0;
-    this->get_block(0,i,cr_matrix_pt,temp_mat_pt);
+    this->get_block(0,i,temp_mat_pt);
     unsigned temp_mat_ncol = temp_mat_pt->ncol();
     std::cout << "ncol:::: " << temp_mat_ncol << std::endl; 
   }
@@ -293,7 +293,7 @@ pause("BUBBLE POP");
   // RAYHERE
   //CRDoubleMatrix* b_pt = Prec_blocks[1];
   CRDoubleMatrix* b_pt = 0;
-  this->get_block(1,0,cr_matrix_pt,b_pt);
+  this->get_block(1,0,b_pt);
   //double t_get_B_finish = TimingHelpers::timer();
   //if(Doc_time)
   // {
@@ -441,7 +441,7 @@ pause("BUBBLE POP");
   //CRDoubleMatrix* bt_pt = Prec_blocks[2];
   CRDoubleMatrix* bt_pt = 0;
   double t_get_Bt_start = TimingHelpers::timer();
-  this->get_block(0,1,cr_matrix_pt,bt_pt);
+  this->get_block(0,1,bt_pt);
   double t_get_Bt_finish = TimingHelpers::timer();
   if(Doc_time)
    {
@@ -563,7 +563,7 @@ pause("BUBBLE POP");
   // Get momentum block F
   CRDoubleMatrix* f_pt = 0; //Prec_blocks[0];
   double t_get_F_start = TimingHelpers::timer();
-  this->get_block(0,0,cr_matrix_pt,f_pt);
+  this->get_block(0,0,f_pt);
   double t_get_F_finish = TimingHelpers::timer();
   if(Doc_time)
    {
@@ -597,7 +597,7 @@ pause("BUBBLE POP");
   bt_pt->sparse_indexed_output("Bt_from_constns");
   //pause("Before get bt block"); 
   
-  this->get_block(0,1,cr_matrix_pt,bt_pt);
+  this->get_block(0,1,bt_pt);
   t_get_Bt_finish = TimingHelpers::timer();
   
   if(Doc_time)
