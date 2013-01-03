@@ -999,17 +999,15 @@ class LagrangeEnforcedflowPreconditioner
     // RAYEDIT - I'm not sure what to do here.
     // I'll cross the bridge when I come to it.
     N_doftypes = this->ndof_types();
-    N_fluid_doftypes = 5; // rayupdate update this! (int)(((double)2*n_dof_types)/3);
+    N_fluid_doftypes = 5;
   }
 
   // Determine the number of velocity dof types
-  // We assume that the velocities are constrained in all meshes.
-  // i.e. in all meshes we have velocities that are constrained.
+  // Except for the bulk mesh, assume all meshes has 
+  // constrained velocity dof types.
   N_velocity_doftypes = nmesh*elemental_dimension;
   N_fluid_doftypes = N_velocity_doftypes + 1;
   N_lagrange_doftypes = N_doftypes - N_fluid_doftypes;
-
-
   
 // Testing: ///////////////////////////////////////////////////////////////////
 // I should get:
@@ -1150,9 +1148,6 @@ this->block_setup(block_setup_bcpl);
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 
-
-
-
 // Testing: ///////////////////////////////////////////////////////////////////
 // I should get:
 // 0 4 8 12 1 5 9 13 2 6 10 14 15 3 7 11 16 17 18
@@ -1167,6 +1162,7 @@ this->block_setup(block_setup_bcpl);
 //  N_velocity_doftypes = elemental_dimension*nmesh;
 ///////////////////////////////////////////////////////////////////////////////
   
+/// OBSOLETE: The below does not split bulk and constrained vdoftypes.
   // Re-order the dof_types.
   // The natural ordering of the dof types are ordered by their meshes.
   // We want to group all the velocities (together with their directions),
@@ -1236,12 +1232,6 @@ this->block_setup(block_setup_bcpl);
   CRDoubleMatrix* cr_matrix_pt = static_cast<CRDoubleMatrix*>(matrix_pt());
 #endif
 
-
-
-
-
-
-
 //  for (unsigned block_i = 0; block_i < N_doftypes; block_i++) 
 //  {
 //    CRDoubleMatrix* temp_matrix_pt = 0;
@@ -1254,6 +1244,7 @@ this->block_setup(block_setup_bcpl);
 //  pause("done"); 
 
 
+  /// OBSOLETE CODE: The below does not split bulk and constrained vdoftypes
   // Re-order the dof_types.
   // The natural ordering of the dof types are ordered by their meshes.
   // We want to group all the velocities (together with their directions),
@@ -1329,10 +1320,12 @@ this->block_setup(block_setup_bcpl);
 //    cout << Doftype_list_vpl[i] << endl;
 //  }
   // */
-  // Store the size of get type of block.
-  // This will be used in the preconditioner_solve() function.
-  // (per Newton iteration, per Newton Step) when re-arranging
-  // the block vectors.
+
+
+  // Store the size of each block.
+  // This will be used in the preconditioner_solve() function when 
+  // concatenating block vectors.
+  // This is in the order bcpl
   Doftype_block_size.assign(N_doftypes,0);
   for(unsigned i = 0; i < N_doftypes; i++)
   {
@@ -1344,7 +1337,7 @@ this->block_setup(block_setup_bcpl);
 //  {
 //    std::cout << "nrow_local: " << Doftype_block_size[doftype_i] << std::endl; 
 //  }
-//pause("done"); 
+//  pause("done"); 
 
   Fluid_block_size = 0;
   Pressure_block_size = 0;
@@ -1362,9 +1355,6 @@ this->block_setup(block_setup_bcpl);
 //  std::cout << "Pressure_block_size: " << Pressure_block_size << std::endl; 
 //  std::cout << "Fluid_block_size: " << Fluid_block_size << std::endl; 
   
-  
-    
-  // Setting up the submatrix dimension file.
   if(Doc_prec)
   {
     // This is for bebugging purposes.
@@ -1432,13 +1422,6 @@ this->block_setup(block_setup_bcpl);
 
 
   ///////////////////////////////////////////////////////////////////////////
-/*
-  cout << "Velocity_block_size" << Velocity_block_size << endl;
-  cout << "Pressure_block_size" << Pressure_block_size << endl;
-  cout << "Fluid_block_size" << Fluid_block_size << endl;
-  pause("done done");
-// */
-  ////////////////////////////////////////////////////////////////////////////////
   // Need to create the norms, used for Sigma, if required
 
   if(Use_default_norm_of_f_scaling)
