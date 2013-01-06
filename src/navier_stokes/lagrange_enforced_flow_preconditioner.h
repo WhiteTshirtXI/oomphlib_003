@@ -1527,21 +1527,22 @@ this->block_setup(block_setup_bcpl);
   std::cout << "RAYSIGMA: " << std::setprecision(15) << Scaling_sigma
                        << std::setprecision(cout_precision)
                        << std::endl;
-
+  pause("Where I stopped..."); 
+  
   ///////////////////////////////////////////////////////////////////////////
   // We extract the velocity blocks then create the augmented fluid matrix.//
   ///////////////////////////////////////////////////////////////////////////
 
   // Extract the velocity block.
-  DenseMatrix<CRDoubleMatrix*> v_aug_pt(N_velocity_doftypes,
+  DenseMatrix<CRDoubleMatrix*> v_aug_pts(N_velocity_doftypes,
                                         N_velocity_doftypes,0);
   for(unsigned row_i = 0; row_i < N_velocity_doftypes; row_i++)
   {
     for(unsigned col_i = 0; col_i < N_velocity_doftypes; col_i++)
     {
 //      this->get_block(Doftype_list_vpl[row_i], Doftype_list_vpl[col_i],
-//                      cr_matrix_pt,v_aug_pt(row_i,col_i));
-      this->get_block(row_i,col_i,v_aug_pt(row_i,col_i));
+//                      cr_matrix_pt,v_aug_pts(row_i,col_i));
+      this->get_block(row_i,col_i,v_aug_pts(row_i,col_i));
     } // for
   } // for
 
@@ -1776,8 +1777,8 @@ this->block_setup(block_setup_bcpl);
 
 
 ///////////////////////////////////////////////////////////////////////////////
-   // Now we create the augmented matrix in v_aug_pt.
-   // v_aug_pt is already re-ordered
+   // Now we create the augmented matrix in v_aug_pts.
+   // v_aug_pts is already re-ordered
    // Loop through the mm_locations
    for(unsigned ii = 0; ii < n_mm; ii++)
    {
@@ -1802,7 +1803,7 @@ this->block_setup(block_setup_bcpl);
         mm_pts[ii]->multiply((*inv_w_pt),(*aug_pt));
         aug_pt->multiply(*mm_pts[jj],(*aug_pt));
 
-        add_matrices(aug_pt,v_aug_pt(aug_i,aug_j));
+        add_matrices(aug_pt,v_aug_pts(aug_i,aug_j));
 
         delete aug_pt;
 
@@ -1818,7 +1819,7 @@ this->block_setup(block_setup_bcpl);
 
 //  pause("This pause 2");
 
-  // AT this point, we have created the aumented fluid block in v_aug_pt
+  // AT this point, we have created the aumented fluid block in v_aug_pts
   // and the w block in w_pts.
   //
 //*
@@ -1837,12 +1838,12 @@ this->block_setup(block_setup_bcpl);
 
     DenseMatrix<CRDoubleMatrix* > f_aug_ptrs(N_fluid_doftypes,
                                              N_fluid_doftypes,0);
-    // put in v_aug_pt:
+    // put in v_aug_pts:
     for(unsigned v_i = 0; v_i < N_velocity_doftypes; v_i++)
     {
       for(unsigned v_j = 0; v_j < N_velocity_doftypes; v_j++)
       {
-        f_aug_ptrs(v_i,v_j) = v_aug_pt(v_i,v_j);
+        f_aug_ptrs(v_i,v_j) = v_aug_pts(v_i,v_j);
         //stringstream v_block_name;
         //v_block_name << "f_1aug_" << v_i << v_j;
         //f_aug_ptrs(v_i,v_j)->sparse_indexed_output(v_block_name.str());
@@ -1916,12 +1917,12 @@ this->block_setup(block_setup_bcpl);
 
     DenseMatrix<CRDoubleMatrix* > f_aug_ptrs(N_fluid_doftypes,
         N_fluid_doftypes,0);
-    // put in v_aug_pt:
+    // put in v_aug_pts:
     for(unsigned v_i = 0; v_i < N_velocity_doftypes; v_i++)
     {
       for(unsigned v_j = 0; v_j < N_velocity_doftypes; v_j++)
       {
-        f_aug_ptrs(v_i,v_j) = v_aug_pt(v_i,v_j);
+        f_aug_ptrs(v_i,v_j) = v_aug_pts(v_i,v_j);
         //stringstream v_block_name;
         //v_block_name << "f_1aug_" << v_i << v_j;
         //f_aug_ptrs(v_i,v_j)->sparse_indexed_output(v_block_name.str());
@@ -1958,14 +1959,14 @@ this->block_setup(block_setup_bcpl);
 //
 //    // F block:
 //    //CRDoubleMatrix* f_pt = 0;
-//    cat(v_aug_pt,prec_blocks[0]);
-//    // delete v_aug_pt
+//    cat(v_aug_pts,prec_blocks[0]);
+//    // delete v_aug_pts
 //    for (unsigned row_i = 0; row_i < N_velocity_doftypes; row_i++)
 //    {
 //      for (unsigned col_i = 0; col_i < N_velocity_doftypes; col_i++)
 //      {
-//        delete v_aug_pt(row_i,col_i);
-//        v_aug_pt(row_i,col_i) = 0;
+//        delete v_aug_pts(row_i,col_i);
+//        v_aug_pts(row_i,col_i) = 0;
 //      }
 //    }
 //
@@ -2126,7 +2127,7 @@ this->block_setup(block_setup_bcpl);
 
   }
 //  */
-//delete v_aug_pt;
+//delete v_aug_pts;
 //CLEAR w_pts
 
 ////////////////////////////////////////////////////////////////////////////////
