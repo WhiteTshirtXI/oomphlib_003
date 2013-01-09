@@ -1527,7 +1527,6 @@ this->block_setup(block_setup_bcpl);
   std::cout << "RAYSIGMA: " << std::setprecision(15) << Scaling_sigma
                        << std::setprecision(cout_precision)
                        << std::endl;
-  pause("Where I stopped..."); 
   
   ///////////////////////////////////////////////////////////////////////////
   // We extract the velocity blocks then create the augmented fluid matrix.//
