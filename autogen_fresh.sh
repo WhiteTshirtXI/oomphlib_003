@@ -141,6 +141,7 @@ if $raw_build; then
     echo " autoconf/automake to rebuild them on the new machine]."
     echo " "
     echo " Do you want to wipe the helper scripts [y/n -- default: n]"
+    #reply=`OptionRead`
     reply="y"
     if test "$reply" = "y" -o "$reply" = "Y" ; then 
         echo " "
@@ -212,6 +213,7 @@ echo "    " $build_dir
 echo " "
 echo " "
 OptionPrompt " Is this OK? [y/n -- default: n]"
+#reply=`OptionRead`
 reply="y"
 if test "$reply" != "y" -a "$reply" != "Y" ; then 
    OptionPrompt "Specify build directory [e.g. /home/joe_user/build] :"
@@ -251,6 +253,7 @@ if (test -d  $build_dir); then
     echo "Note: Build directory " $build_dir " exists."
     echo " "
     OptionPrompt "Do you want to wipe it [y/n -- default: n]"
+    #reply=`OptionRead`
     reply="y"
     if test "$reply" = "y" -o "$reply" = "Y" ; then 
 
@@ -263,6 +266,7 @@ if (test -d  $build_dir); then
        ls -l  $build_dir
        echo " "
        OptionPrompt "Are you still sure you want to wipe it [y/n -- default: n]"
+       #reply2=`OptionRead`
        reply2="y"
        if test "$reply2" = "y" -o "$reply2" = "Y" ; then 
           echo " "
@@ -282,6 +286,7 @@ fi
 echo " " 
 echo " " 
 OptionPrompt "Do you want to document the size of the installation ? [y/n -- default: n]"
+#want_doc_size=`OptionRead`
 want_doc_size="n"
 if test "$want_doc_size" = "y" -o "$want_doc_size" = "Y" ; then 
     doc_size="y"
@@ -425,6 +430,7 @@ else
   echo 
   if test $list_changed = "false"; then
    OptionPrompt "Is this OK? [y/n -- default: y]"
+   #reply=`OptionRead`
    reply="y"
   else
    reply="n"
@@ -547,6 +553,7 @@ echo "codes are run and validated."
 echo " " 
 echo "Do you want to build the demo codes and run the self-tests at the end "
 OptionPrompt "of the build procedure? [y/n -- default: n]"
+#want_self_tests=`OptionRead`
 want_self_tests="y"
 
 if test "$want_self_tests" = "y" -o "$want_self_tests" = "Y" ; then 
@@ -560,6 +567,7 @@ if test "$want_self_tests" = "y" -o "$want_self_tests" = "Y" ; then
   if [ -e validation.log ]; then 
     echo " " 
     OptionPrompt "The file validation.log exists. Is it OK to wipe it? [y/n -- default: n]"
+    #reply=`OptionRead`
     reply="y"
     if test "$reply" != "y" -a "$reply" != "Y" ; then 
        echo " "
