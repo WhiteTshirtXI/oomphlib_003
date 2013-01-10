@@ -86,7 +86,7 @@ done
 
 } # run_tests function
 
-VALIDATA="RAYITS_squ0_PRECLIST0.dat"
+VALIDATA="RAYITS_squ0_PRECLIST0"
 OUTFILE="temp.dat"
 
 OOMPHPATH="/home/ray/learning/phd/wulfling/oomphlib_current/"
