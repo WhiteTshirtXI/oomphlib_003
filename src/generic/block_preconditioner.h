@@ -126,7 +126,6 @@ namespace oomph
    Ndof_types=0;
 
    Master_doftype_order.resize(0);
-   //Prec_blocks.resize(0);
   }
 
   /// Destructor (empty)
@@ -165,44 +164,135 @@ namespace oomph
    return m_pt;
   }
 
-   // RAYRAY Set the blocks for the Navier Stokes preconditioner
-   void set_prec_blocks(DenseMatrix<CRDoubleMatrix*> &required_prec_blocks)
+   // We pass down the preconditioner.
+   // This must be the most fine grain blocking.
+   void set_prec_blocks(DenseMatrix<CRDoubleMatrix*> &prec_block_pts)
    { 
 #ifdef PARANOID
-//     if(required_prec_blocks.size() != 3)                                                   
-//     {                                                                           
-//       std::ostringstream error_message;                                         
-//       error_message << "There must be three blocks for the\n"
-//                     << "LSC preconditioner, for F, B and Bt" << std::endl;          
-//       throw OomphLibError(error_message.str(),                                  
-//                          "ConstrainedNavierStokesSchurComplementPreconditioner",                      
-//                          OOMPH_EXCEPTION_LOCATION);                            
-//     }
-//     for (unsigned block_i = 0; block_i < 3; block_i++) 
-//     {
-//       if (required_prec_blocks[block_i] == 0) 
-//       {
-//       std::ostringstream error_message;                                         
-//       error_message << "Block " << block_i << " is not set." << std::endl;
-//       throw OomphLibError(error_message.str(),                                  
-//                          "ConstrainedNavierStokesSchurComplementPreconditioner",                      
-//                          OOMPH_EXCEPTION_LOCATION); 
-//       }
-//     }
-//
+     unsigned prec_blocks_nrow = prec_block_pts.nrow();
+     std::cout << "prec_blocks_nrow: "
+               << prec_blocks_nrow << std::endl; 
+     
+     // Ensure that this is a square block matrix
+     std::cout << "ncol: "
+               << prec_block_pts.ncol() << std::endl; 
+      
+     if(prec_blocks_nrow != prec_block_pts.ncol())
+     {
+       std::ostringstream error_message; 
+       error_message << "The number of block rows and block columns are "
+                     << "not the same." << std::endl;          
+       throw OomphLibError(error_message.str(),
+                           "BlockPreconditioner::set_prec_blocks(...)",
+                           OOMPH_EXCEPTION_LOCATION);
+     }
+     
+     // Check that this is the most fine grain .
+     std::cout << "ndof_types: " << this->ndof_types() << std::endl;
+     if(prec_blocks_nrow != this->ndof_types())
+     {
+       std::ostringstream error_message;
+       error_message << "This must be the most fine grain block matrix.\n"
+                     << "It must have ndof_types number of rows / columns.\n"
+                     << "You have given me a " << prec_blocks_nrow
+                     << " by " << prec_blocks_nrow << " matrix.\n"
+                     << "I want a " << ndof_types() << " by "<< ndof_types()
+                     << " matrix." << std::endl;          
+       throw OomphLibError(error_message.str(),
+                           "BlockPreconditioner::set_prec_blocks(...)",
+                           OOMPH_EXCEPTION_LOCATION);
+     }
+     
+     // Check that all matrices have been set
+     for (unsigned block_row_i = 0; block_row_i < prec_blocks_nrow; 
+          block_row_i++) 
+     {
+       for (unsigned block_col_i = 0; block_col_i < prec_blocks_nrow; 
+            block_col_i++) 
+       {
+         if(prec_block_pts(block_row_i,block_col_i) == 0)
+         {
+           std::ostringstream error_message;
+           error_message << "Block (" << block_row_i 
+                         << "," << block_col_i << ")"
+                         << " is NULL." << std::endl;
+           throw OomphLibError(error_message.str(),
+                               "BlockPreconditioner::set_prec_blocks(...)",
+                               OOMPH_EXCEPTION_LOCATION);
+         }
+       }
+     }
+     
+     // Check that all matrices are of correct size.
+     // First do the rows.
+     for (unsigned block_row_i = 0; block_row_i < prec_blocks_nrow; 
+          block_row_i++) 
+     {
+       unsigned current_block_row_nrow
+         = this->dof_block_dimension(block_row_i);
+        
+       // Loop through the columns
+       for(unsigned block_col_i = 0; block_col_i < prec_blocks_nrow; 
+           block_col_i++)
+       {
+         // Get the global row of this block.
+         unsigned current_block_nrow = prec_block_pts(block_row_i,
+                                                      block_col_i)->nrow();
+         if(current_block_row_nrow != current_block_nrow)
+         {
+           std::ostringstream error_message;
+           error_message << "Block (" << block_row_i 
+                         << "," << block_col_i << ")"
+                         << " does not have the correct number of rows." 
+                         << std::endl;
+           throw OomphLibError(error_message.str(),
+                               "BlockPreconditioner::set_prec_blocks(...)",
+                               OOMPH_EXCEPTION_LOCATION);
+         }
+       }
+     }
+      
+     // Now check the columns
+     for(unsigned block_col_i = 0; block_col_i < prec_blocks_nrow; 
+         block_col_i++) 
+     {
+       // Get the number of columns for this block column
+       unsigned current_block_col_ncol 
+         = prec_block_pts(0,block_col_i)->ncol();
+
+       // Loop through the rows
+       for(unsigned block_row_i = 0; block_row_i < prec_blocks_nrow;
+           block_row_i++) 
+       {
+         // Get the number of columns for this block.
+         unsigned current_block_ncol = prec_block_pts(block_row_i,
+                                                      block_col_i)->ncol();
+         if(current_block_col_ncol != current_block_ncol)
+         {
+           std::ostringstream error_message;
+           error_message << "Block (" << block_row_i 
+                         << "," << block_col_i << ")"
+                         << " does not have the correct number of columns." 
+                         << std::endl;
+           throw OomphLibError(error_message.str(),
+                               "BlockPreconditioner::set_prec_blocks(...)",
+                               OOMPH_EXCEPTION_LOCATION);
+         }
+       }
+     }
+     
      if(is_master_block_preconditioner())
      {
 		  std::ostringstream error_message;
 		  error_message << "Warning: This is a master preconditioner\n"
                     << "This function should not be called." << std::endl;
 		  throw OomphLibWarning(error_message.str(),
-					"BlockPreconditioner::set_master_doftype_ordering",
-					OOMPH_EXCEPTION_LOCATION);
+                            "BlockPreconditioner::set_master_doftype_ordering",
+					                  OOMPH_EXCEPTION_LOCATION);
      }
 #endif
-     Prec_blocks = required_prec_blocks;
-//std::cout << "Has been set properly." << std::endl; 
-//pause("done prec set"); 
+
+     Prec_blocks = prec_block_pts;
 
      // set bool Prec_blocks_has_been_set = true - will I ever have to set it to
      // false?
@@ -1307,8 +1397,7 @@ namespace oomph
      << "suggests that block_setup() was not called for the \n"
      << "master block preconditioner before turning this one into \n"
      << "a subsidiary one\n";
-    throw OomphLibWarning(
-                          error_message.str(),
+    throw OomphLibWarning(error_message.str(),
                           "BlockPreconditioner::turn_into_subsidiary_block_preconditioner(...)",
                           OOMPH_EXCEPTION_LOCATION);
    }
