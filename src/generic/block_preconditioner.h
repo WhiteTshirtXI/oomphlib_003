@@ -167,16 +167,13 @@ namespace oomph
 
    // We pass down the preconditioner.
    // This must be the most fine grain blocking.
-   void set_prec_blocks(DenseMatrix<CRDoubleMatrix*> &prec_block_pts)
+   void set_prec_blocks(DenseMatrix<CRDoubleMatrix*> &prec_block_pts,
+                        Vector<Vector<unsigned> > &blockmapping)
    { 
 #ifdef PARANOID
      unsigned prec_blocks_nrow = prec_block_pts.nrow();
-     std::cout << "prec_blocks_nrow: "
-               << prec_blocks_nrow << std::endl; 
      
      // Ensure that this is a square block matrix
-     std::cout << "ncol: "
-               << prec_block_pts.ncol() << std::endl; 
       
      if(prec_blocks_nrow != prec_block_pts.ncol())
      {
@@ -294,6 +291,16 @@ namespace oomph
 #endif
 
      Prec_blocks = prec_block_pts;
+     Block_to_block_map = blockmapping;
+     for (unsigned i = 0; i < Block_to_block_map.size(); i++) 
+     {
+       for (unsigned j = 0; j < Block_to_block_map[i].size(); j++) 
+       {
+         std::cout << "(" << i << ","<<j<<")" << Block_to_block_map[i][j] << std::endl; 
+        
+       }
+     }
+
 
      Prec_blocks_has_been_set = true;
    }
@@ -513,7 +520,7 @@ namespace oomph
   
   /// \short Gets block (i,j) from the original matrix, pointed to by
   /// Matrix_pt and returns it in block_matrix_pt
-  void get_block_scrambled_matrix(const unsigned& i, const unsigned& j,
+  void get_block_natural_matrix(const unsigned& i, const unsigned& j,
                  MATRIX*& block_matrix_pt) const;
   
   /// \short Gets block (i,j) from the a blocked matrix, pointed to by
@@ -1172,7 +1179,7 @@ namespace oomph
 
     /// Concatenate matrices into a single matrix.
     void cat(DenseMatrix<CRDoubleMatrix* > &matrix_pt, 
-              CRDoubleMatrix *&block_pt);
+              CRDoubleMatrix *&block_pt) const;
 
     // RAYRAY: vector required for subsidiary solve.
     // used to get the required RHS vector in the ordering of the master matrix,
@@ -4288,7 +4295,7 @@ namespace oomph
   }
 
   template<typename MATRIX> void BlockPreconditioner<MATRIX>::
-  cat(DenseMatrix<CRDoubleMatrix* > &matrix_pt, CRDoubleMatrix *&block_pt)
+  cat(DenseMatrix<CRDoubleMatrix* > &matrix_pt, CRDoubleMatrix *&block_pt) const
   {
     bool distributed = this->master_distribution_pt()->distributed();
     unsigned long matrix_nrow = matrix_pt.nrow();

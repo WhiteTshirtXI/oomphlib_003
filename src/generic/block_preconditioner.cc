@@ -53,7 +53,7 @@ namespace oomph
 //=============================================================================
  template<> 
  void BlockPreconditioner<CCDoubleMatrix>:: 
- get_block_scrambled_matrix(const unsigned& i, const unsigned& j, 
+ get_block_natural_matrix(const unsigned& i, const unsigned& j, 
 	    CCDoubleMatrix*& block_pt) const
  {
 
@@ -178,7 +178,7 @@ namespace oomph
    if(Prec_blocks_has_been_set)
      get_block_blocked_matrix(i,j,block_pt);
    else
-     get_block_scrambled_matrix(i,j,block_pt);
+     get_block_natural_matrix(i,j,block_pt);
  } 
 
  //=============================================================================
@@ -193,6 +193,7 @@ namespace oomph
 #ifdef PARANOID
   // the number of blocks
   unsigned n_blocks = this->nblock_types();
+  std::cout << "nblocks: " << n_blocks << std::endl; 
 
   // paranoid check that block i is in this block preconditioner
   if (block_i >= n_blocks || block_j >= n_blocks)
@@ -211,9 +212,9 @@ namespace oomph
   // How many block rows and columns?
   unsigned nblock_in_row = Block_to_block_map[block_i].size();
   unsigned nblock_in_col = Block_to_block_map[block_j].size();
-
+  
   DenseMatrix<CRDoubleMatrix*> block_pts(nblock_in_row,nblock_in_col,0);
-
+  
   // Full in he corresponding matrices.
   for (unsigned block_row_i = 0; block_row_i < nblock_in_row; block_row_i++) 
   {
@@ -236,7 +237,7 @@ namespace oomph
 //=============================================================================
  template<> 
  void BlockPreconditioner<CRDoubleMatrix>:: 
- get_block_scrambled_matrix(const unsigned& block_i, const unsigned& block_j, 
+ get_block_natural_matrix(const unsigned& block_i, const unsigned& block_j, 
 	    CRDoubleMatrix*& block_pt) const
 {
 
@@ -782,7 +783,7 @@ namespace oomph
    if(Prec_blocks_has_been_set)
      get_block_blocked_matrix(block_i,block_j,block_pt);
    else
-     get_block_scrambled_matrix(block_i,block_j,block_pt);
+     get_block_natural_matrix(block_i,block_j,block_pt);
  } 
  
 

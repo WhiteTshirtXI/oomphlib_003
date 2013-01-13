@@ -171,14 +171,16 @@ namespace oomph
                      	"ConstrainedNavierStokesSchurComplementPreconditioner::setup()",
                         OOMPH_EXCEPTION_LOCATION);
    }
-//  if (Prec_blocks.size() == 0)
-//   {
-//    std::ostringstream error_message;
-//    error_message << "set_prec_blocks(...) function has not been called.";
-//    throw OomphLibError(error_message.str(),
-//                     	"ConstrainedNavierStokesSchurComplementPreconditioner::setup()",
-//                        OOMPH_EXCEPTION_LOCATION);
-//   }
+
+  if (!Prec_blocks_has_been_set)
+   {
+    std::ostringstream error_message;
+    error_message << "set_prec_blocks(...) function has not been called.";
+    throw OomphLibError(error_message.str(),
+               "ConstrainedNavierStokesSchurComplementPreconditioner::setup()",
+               OOMPH_EXCEPTION_LOCATION);
+   }
+
 //  if (Master_doftype_order.size() == 0)
 //   {
 //    std::ostringstream error_message;
@@ -187,7 +189,6 @@ namespace oomph
 //                     	"ConstrainedNavierStokesSchurComplementPreconditioner::setup()",
 //                        OOMPH_EXCEPTION_LOCATION);
 //   }
-//
 #endif
 
   // set the mesh
@@ -213,7 +214,6 @@ namespace oomph
                         OOMPH_EXCEPTION_LOCATION);
    }
 #endif
-
 
   if (doc_block_matrices)
    {
@@ -245,28 +245,9 @@ namespace oomph
    }
 
   Dim = Navier_stokes_mesh_pt->finite_element_pt(0)->dim();
+  
 
   this->block_setup();
-
-  for (unsigned i = 0; i < 5; i++) 
-  {
-    CRDoubleMatrix* temp_mat_pt = 0;
-    this->get_block(0,i,temp_mat_pt);
-    unsigned temp_mat_ncol = temp_mat_pt->ncol();
-    std::cout << "ncol:::: " << temp_mat_ncol << std::endl; 
-  }
-
-  std::cout << "new testsss: \n" << std::endl;
-  unsigned pb_nrow = Prec_blocks.nrow();
-  unsigned pb_ncol = Prec_blocks.ncol();
-  for (unsigned i = 0; i < pb_ncol; i++) 
-  {
-    unsigned subblock_ncol = Prec_blocks(0,i)->ncol();
-    std::cout << "ncol from pb:" << subblock_ncol << std::endl; 
-    
-  }
-  
-pause("BUBBLE POP");
 
   double t_block_finish = TimingHelpers::timer();
   double block_setup_time = t_block_finish - t_block_start;
@@ -294,6 +275,7 @@ pause("BUBBLE POP");
   //CRDoubleMatrix* b_pt = Prec_blocks[1];
   CRDoubleMatrix* b_pt = 0;
   this->get_block(1,0,b_pt);
+  
   //double t_get_B_finish = TimingHelpers::timer();
   //if(Doc_time)
   // {
@@ -594,7 +576,7 @@ pause("BUBBLE POP");
   // it by its product with the inverse velocity mass matrix)
   t_get_Bt_start = TimingHelpers::timer();
   //bt_pt = Prec_blocks[2];
-  bt_pt->sparse_indexed_output("Bt_from_constns");
+  //bt_pt->sparse_indexed_output("Bt_from_constns");
   //pause("Before get bt block"); 
   
   this->get_block(0,1,bt_pt);
@@ -612,7 +594,7 @@ pause("BUBBLE POP");
   double t_Bt_MV_start = TimingHelpers::timer();
   Bt_mat_vec_pt = new MatrixVectorProduct;
 
-  std::cout << "Bt matrix built: " << bt_pt->built()<< std::endl; 
+  //std::cout << "Bt matrix built: " << bt_pt->built()<< std::endl; 
   
 // pause("after get bt block"); 
   Bt_mat_vec_pt->setup(bt_pt);
@@ -624,7 +606,7 @@ pause("BUBBLE POP");
     oomph_info << "Time to build Bt Matrix Vector Operator [sec]: "
                << t_Bt_MV_time << std::endl;
    }
-  //delete bt_pt;
+  delete bt_pt;
 
   // if the P preconditioner has not been setup
   if (P_preconditioner_pt == 0)
@@ -646,7 +628,7 @@ pause("BUBBLE POP");
     p_matrix_pt->sparse_indexed_output_with_offset(junk.str());
     oomph_info << "Done output of " << junk.str() << std::endl;
    }
- //  pause("P_prec setup"); 
+   //pause("P_prec setup"); 
    
   P_preconditioner_pt->setup(problem_pt(), p_matrix_pt);
   delete p_matrix_pt;
@@ -717,7 +699,6 @@ pause("BUBBLE POP");
  void ConstrainedNavierStokesSchurComplementPreconditioner:: 
  preconditioner_solve(const DoubleVector &r, DoubleVector &z)
  {
-
 #ifdef PARANOID
   if (Preconditioner_has_been_setup==false)
    {
@@ -725,7 +706,7 @@ pause("BUBBLE POP");
     error_message << "setup must be called before using preconditioner_solve";
     throw OomphLibError(
      error_message.str(),
-     "ConstrainedNavierStokesSchurComplementPreconditioner::preconditioner_solve()",
+     "ConstrainedNav...ComplementPreconditioner::preconditioner_solve()",
      OOMPH_EXCEPTION_LOCATION);
    }
   if (z.built())
@@ -737,7 +718,7 @@ pause("BUBBLE POP");
                     << "of global rows";
       throw OomphLibError(
        error_message.str(),
-       "ConstrainedNavierStokesSchurComplementPreconditioner::preconditioner_solve()",
+       "ConstrainedNav...ComplementPreconditioner::preconditioner_solve()",
        OOMPH_EXCEPTION_LOCATION);      
      }
    }
@@ -761,7 +742,9 @@ pause("BUBBLE POP");
   // Loop over all entries in the global vector (this one
   // includes velocity and pressure dofs in some random fashion)
   //this->get_block_vector(1,r,temp_vec);
-  //this->get_block_vector(Master_doftype_order[N_velocity_doftypes],r,temp_vec);
+  //this->get_block_vector(Master_doftype_order[N_velocity_doftypes],
+  //r,temp_vec);
+  
   this->get_block_vector(N_velocity_doftypes,r,temp_vec);
   
   // NOTE: The vector temp_vec now contains the vector r_p.

@@ -1978,18 +1978,18 @@ this->block_setup(block_setup_bcpl);
 //    double t_get_B_start = TimingHelpers::timer();
 //
 //    DenseMatrix<CRDoubleMatrix* > b_pts(1,N_velocity_doftypes,0);
-//
-//    // Encapsulation of the variable row_i
+
+    // Encapsulation of the variable row_i
 //    {
-//      // The pressure block is located here in the vpl ordering.
+      // The pressure block is located here in the vpl ordering.
 //      unsigned row_i = N_velocity_doftypes;
-//
-//      // Loop through the velocity blocks columns.
+
+      // Loop through the velocity blocks columns.
 //      for(unsigned col_i = 0; col_i < N_velocity_doftypes; col_i++)
 //      {
-//        //        this->get_block(Doftype_list_vpl[row_i], Doftype_list_vpl[col_i],
-//        //                        cr_matrix_pt,b_pts(0,col_i));
-//        this->get_block(row_i,col_i,cr_matrix_pt,b_pts(0,col_i));
+//        //this->get_block(Doftype_list_vpl[row_i], Doftype_list_vpl[col_i],
+//        //                cr_matrix_pt,b_pts(0,col_i));
+//        this->get_block(row_i,col_i,b_pts(0,col_i));
 //      }//for(unsigned col_i = 0; col_i < N_velocity_doftypes; col_i++)
 //    }
 //
@@ -2004,7 +2004,10 @@ this->block_setup(block_setup_bcpl);
 //    // merge the sub-blocks.
 //    double t_merge_B_start = TimingHelpers::timer();
 //    cat(b_pts,prec_blocks[1]);
-//    double t_merge_B_finish = TimingHelpers::timer();
+//    prec_blocks[1]->sparse_indexed_output("b_pt_old");
+//    pause("done b_pt"); 
+    
+    //    double t_merge_B_finish = TimingHelpers::timer();
 //    if(Doc_time)
 //    {
 //      double t_merge_B_time = t_merge_B_finish - t_merge_B_start;
@@ -2112,8 +2115,23 @@ this->block_setup(block_setup_bcpl);
 
 //    Navier_stokes_block_preconditioner_pt
 //      ->set_prec_blocks(prec_blocks);
+    Vector<Vector<unsigned> > blocktoblockvec;
+    
+    Vector<unsigned> ns_v_vec(N_velocity_doftypes,0);
+    for (unsigned i = 0; i < N_velocity_doftypes; i++) 
+    {
+      ns_v_vec[i]=i;
+    }
+    blocktoblockvec.push_back(ns_v_vec);
+
+    Vector<unsigned> ns_p_vec(1,0);
+    ns_p_vec[0] = N_velocity_doftypes;
+
+    blocktoblockvec.push_back(ns_p_vec);
+
+
     Navier_stokes_block_preconditioner_pt
-      ->set_prec_blocks(f_aug_ptrs);
+      ->set_prec_blocks(f_aug_ptrs,blocktoblockvec);
 
     Navier_stokes_block_preconditioner_pt
       ->setup(problem_pt(),matrix_pt());
