@@ -516,12 +516,10 @@ namespace oomph
   void get_block_scrambled_matrix(const unsigned& i, const unsigned& j,
                  MATRIX*& block_matrix_pt) const;
   
-  /// \short Gets block (i,j) from the original matrix, pointed to by
+  /// \short Gets block (i,j) from the a blocked matrix, pointed to by
   /// Matrix_pt and returns it in block_matrix_pt
   void get_block_blocked_matrix(const unsigned& i, const unsigned& j,
                  MATRIX*& block_matrix_pt) const;
-
-
 
   /// \short Get all the block matrices required by the block preconditioner.
   /// Takes a pointer to a matrix of bools that indicate if a specified
