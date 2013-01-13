@@ -190,8 +190,44 @@ namespace oomph
  get_block_blocked_matrix(const unsigned& block_i, const unsigned& block_j, 
 	    CRDoubleMatrix*& block_pt) const
  {
-   pause("test from getblockblocked"); 
-   
+#ifdef PARANOID
+  // the number of blocks
+  unsigned n_blocks = this->nblock_types();
+
+  // paranoid check that block i is in this block preconditioner
+  if (block_i >= n_blocks || block_j >= n_blocks)
+   {
+    std::ostringstream error_message;
+    error_message << "Requested block (" << block_i << "," << block_j   
+                  << "), however this preconditioner has nblock_types() "
+                  << "= " << nblock_types() << std::endl;
+    throw OomphLibError(error_message.str(),
+                        "BlockPreconditioner::get_block(...)",
+                        OOMPH_EXCEPTION_LOCATION);
+   }
+#endif
+
+  // Create the dense matrix required for the merge.
+  // How many block rows and columns?
+  unsigned nblock_in_row = Block_to_block_map[block_i].size();
+  unsigned nblock_in_col = Block_to_block_map[block_j].size();
+
+  DenseMatrix<CRDoubleMatrix*> block_pts(nblock_in_row,nblock_in_col,0);
+
+  // Full in he corresponding matrices.
+  for (unsigned block_row_i = 0; block_row_i < nblock_in_row; block_row_i++) 
+  {
+    unsigned prec_block_i = Block_to_block_map[block_i][block_row_i];
+    for (unsigned block_col_i = 0; block_col_i < nblock_in_col; block_col_i++) 
+    {
+      unsigned prec_block_j = Block_to_block_map[block_j][block_col_i];
+
+      block_pts(block_row_i,block_col_i) = Prec_blocks(prec_block_i,
+                                                       prec_block_j);
+    }
+  }
+
+  cat(block_pts,block_pt);
  }
 
  //=============================================================================
