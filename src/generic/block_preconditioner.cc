@@ -182,14 +182,13 @@ namespace oomph
    }
 #endif
 
-    // Cast the pointer
-    CRDoubleMatrix* cr_matrix_pt = dynamic_cast<CRDoubleMatrix*>(matrix_pt());
+  // Cast the pointer
+  CRDoubleMatrix* cr_matrix_pt = dynamic_cast<CRDoubleMatrix*>(matrix_pt());
 
-  // if + only one processor
-  //    + more than one processor but matrix_pt is not distributed
-  // then use the serial get_block method
-    if (cr_matrix_pt->distribution_pt()->communicator_pt()->nproc() == 1 ||
-	!cr_matrix_pt->distribution_pt()->distributed())
+  // If only one processor or more than one processor but matrix_pt 
+  // is not distributed then use the serial get_block method
+  if (cr_matrix_pt->distribution_pt()->communicator_pt()->nproc() == 1 ||
+	    !cr_matrix_pt->distribution_pt()->distributed())
    {
     // pointers for the jacobian matrix is compressed row sparse format 
     int* j_row_start;
@@ -197,9 +196,9 @@ namespace oomph
     double* j_value;
     
     // sets pointers to jacobian matrix
-	j_row_start = cr_matrix_pt->row_start();
-	j_column_index = cr_matrix_pt->column_index();
-	j_value = cr_matrix_pt->value();
+    j_row_start = cr_matrix_pt->row_start();
+    j_column_index = cr_matrix_pt->column_index();
+    j_value = cr_matrix_pt->value();
     
     // get the block dimensions
     unsigned block_nrow = this->block_dimension(block_i);
