@@ -34,14 +34,26 @@ namespace oomph
  /// Defaults to false.
  template<typename MATRIX> 
  bool BlockPreconditioner<MATRIX>::Run_block_matrix_test=false;
- 
+
 //=============================================================================
 /// \short Gets block (i,j) from the original matrix and returns it in
 /// block_matrix_pt (Specialisation for CCDoubleMatrix)
 //=============================================================================
  template<> 
  void BlockPreconditioner<CCDoubleMatrix>:: 
- get_block(const unsigned& i, const unsigned& j, 
+ get_block_blocked_matrix(const unsigned& i, const unsigned& j, 
+	    CCDoubleMatrix*& block_pt) const
+ {
+   pause("Not supposed to get here yet");
+ } 
+
+//=============================================================================
+/// \short Gets block (i,j) from the original matrix and returns it in
+/// block_matrix_pt (Specialisation for CCDoubleMatrix)
+//=============================================================================
+ template<> 
+ void BlockPreconditioner<CCDoubleMatrix>:: 
+ get_block_scrambled_matrix(const unsigned& i, const unsigned& j, 
 	    CCDoubleMatrix*& block_pt) const
  {
 
@@ -154,16 +166,43 @@ namespace oomph
    }
  }
 
-
 //=============================================================================
+/// \short Gets block (i,j) from the original matrix and returns it in
+/// block_matrix_pt (Specialisation for CCDoubleMatrix)
+//=============================================================================
+ template<> 
+ void BlockPreconditioner<CCDoubleMatrix>:: 
+ get_block(const unsigned& i, const unsigned& j, 
+	    CCDoubleMatrix*& block_pt) const
+ {
+   if(Prec_blocks_has_been_set)
+     get_block_blocked_matrix(i,j,block_pt);
+   else
+     get_block_scrambled_matrix(i,j,block_pt);
+ } 
+
+ //=============================================================================
 /// \short Gets block (i,j) from the original matrix and returns it in
 /// block_matrix_pt (Specialisation for CRDoubleMatrix)
 //=============================================================================
  template<> 
  void BlockPreconditioner<CRDoubleMatrix>:: 
- get_block(const unsigned& block_i, const unsigned& block_j, 
+ get_block_blocked_matrix(const unsigned& block_i, const unsigned& block_j, 
 	    CRDoubleMatrix*& block_pt) const
  {
+   pause("test from getblockblocked"); 
+   
+ }
+
+ //=============================================================================
+/// \short Gets block (i,j) from the original matrix and returns it in
+/// block_matrix_pt (Specialisation for CRDoubleMatrix)
+//=============================================================================
+ template<> 
+ void BlockPreconditioner<CRDoubleMatrix>:: 
+ get_block_scrambled_matrix(const unsigned& block_i, const unsigned& block_j, 
+	    CRDoubleMatrix*& block_pt) const
+{
 
 #ifdef PARANOID
   // the number of blocks
@@ -694,6 +733,21 @@ namespace oomph
 #endif 
    }
  }
+
+//=============================================================================
+/// \short Gets block (i,j) from the original matrix and returns it in
+/// block_matrix_pt (Specialisation for CRDoubleMatrix)
+//=============================================================================
+ template<> 
+ void BlockPreconditioner<CRDoubleMatrix>:: 
+ get_block(const unsigned& block_i, const unsigned& block_j, 
+	    CRDoubleMatrix*& block_pt) const
+ {
+   if(Prec_blocks_has_been_set)
+     get_block_blocked_matrix(block_i,block_j,block_pt);
+   else
+     get_block_scrambled_matrix(block_i,block_j,block_pt);
+ } 
  
 
 //=============================================================================

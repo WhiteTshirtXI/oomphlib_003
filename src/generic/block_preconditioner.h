@@ -103,7 +103,8 @@ namespace oomph
   /// \short Constructor
   BlockPreconditioner()
    : Ndof_types_in_mesh(0), Block_distribution_pt(0),
-     Preconditioner_matrix_distribution_pt(0)
+     Preconditioner_matrix_distribution_pt(0),
+     Prec_blocks_has_been_set(false)
   {
    // Initially set the master block preconditioner pointer to zero
    // indicating that this is stand-alone preconditioner that will
@@ -287,17 +288,15 @@ namespace oomph
 		  error_message << "Warning: This is a master preconditioner\n"
                     << "This function should not be called." << std::endl;
 		  throw OomphLibWarning(error_message.str(),
-                            "BlockPreconditioner::set_master_doftype_ordering",
+                            "BlockPreconditioner::set_prec_blocks",
 					                  OOMPH_EXCEPTION_LOCATION);
      }
 #endif
 
      Prec_blocks = prec_block_pts;
 
-     // set bool Prec_blocks_has_been_set = true - will I ever have to set it to
-     // false?
+     Prec_blocks_has_been_set = true;
    }
-
 
    // RAYRAY 
    void set_master_doftype_ordering(Vector<unsigned> &block_ordering)
@@ -511,6 +510,18 @@ namespace oomph
   /// Matrix_pt and returns it in block_matrix_pt
   void get_block(const unsigned& i, const unsigned& j,
                  MATRIX*& block_matrix_pt) const;
+  
+  /// \short Gets block (i,j) from the original matrix, pointed to by
+  /// Matrix_pt and returns it in block_matrix_pt
+  void get_block_scrambled_matrix(const unsigned& i, const unsigned& j,
+                 MATRIX*& block_matrix_pt) const;
+  
+  /// \short Gets block (i,j) from the original matrix, pointed to by
+  /// Matrix_pt and returns it in block_matrix_pt
+  void get_block_blocked_matrix(const unsigned& i, const unsigned& j,
+                 MATRIX*& block_matrix_pt) const;
+
+
 
   /// \short Get all the block matrices required by the block preconditioner.
   /// Takes a pointer to a matrix of bools that indicate if a specified
@@ -1181,6 +1192,13 @@ namespace oomph
     Vector<unsigned> Master_doftype_order;
 
     DenseMatrix<CRDoubleMatrix*> Prec_blocks;
+
+    // Used to map between the blocks required or this preconditiner
+    // and the master preconditioner which may have a more fine grain 
+    // block structure
+    Vector<Vector<unsigned> > Block_to_block_map;
+    
+    bool Prec_blocks_has_been_set;
 
  private:
 
