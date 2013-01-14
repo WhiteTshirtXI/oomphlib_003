@@ -193,7 +193,6 @@ namespace oomph
 #ifdef PARANOID
   // the number of blocks
   unsigned n_blocks = this->nblock_types();
-  std::cout << "nblocks: " << n_blocks << std::endl; 
 
   // paranoid check that block i is in this block preconditioner
   if (block_i >= n_blocks || block_j >= n_blocks)

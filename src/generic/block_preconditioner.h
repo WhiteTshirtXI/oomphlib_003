@@ -568,8 +568,42 @@ namespace oomph
   /// \short Takes the naturally ordered vector, v, and extracts the n-th
   /// block vector, b. Here n is the block number in the current
   /// preconditioner.
+  void get_block_blocked_vector(const unsigned& n, const DoubleVector& v,
+                        DoubleVector& b) const;
+
+  /// \short Takes the naturally ordered vector, v, and extracts the n-th
+  /// block vector, b. Here n is the block number in the current
+  /// preconditioner.
+  void get_block_natural_vector(const unsigned& n, const DoubleVector& v,
+                        DoubleVector& b) const;
+
+
+  /// \short Takes the naturally ordered vector, v, and extracts the n-th
+  /// block vector, b. Here n is the block number in the current
+  /// preconditioner.
   void get_block_vector(const unsigned& n, const DoubleVector& v,
                         DoubleVector& b) const;
+
+  /// \short Takes the n-th block ordered vector, b,  and copies its entries
+  /// to the appropriate entries in the naturally ordered vector, v.
+  /// Here n is the block number in the current block preconditioner.
+  /// If the preconditioner is a subsidiary block preconditioner
+  /// the other entries in v  that are not associated with it
+  /// are left alone
+  void return_block_blocked_vector(const unsigned& n,
+                           const DoubleVector& b,
+                           DoubleVector& v) const;
+
+  /// \short Takes the n-th block ordered vector, b,  and copies its entries
+  /// to the appropriate entries in the naturally ordered vector, v.
+  /// Here n is the block number in the current block preconditioner.
+  /// If the preconditioner is a subsidiary block preconditioner
+  /// the other entries in v  that are not associated with it
+  /// are left alone
+  void return_block_natural_vector(const unsigned& n,
+                           const DoubleVector& b,
+                           DoubleVector& v) const;
+
 
   /// \short Takes the n-th block ordered vector, b,  and copies its entries
   /// to the appropriate entries in the naturally ordered vector, v.
@@ -760,8 +794,17 @@ namespace oomph
   void output_blocks_to_files(const std::string& basefilename,
                               const unsigned& precision = 8) const
   {
-   unsigned nblocks = nblock_types();
-
+   unsigned nblocks = 0;
+   
+   if(Prec_blocks_has_been_set)
+   {
+     nblocks = Block_to_block_map.size();
+   }
+   else
+   {
+     nblocks = nblock_types();
+   }
+   
    for(unsigned i=0; i<nblocks; i++)
     for(unsigned j=0; j<nblocks; j++)
      {
@@ -3022,10 +3065,18 @@ namespace oomph
  get_blocks(DenseMatrix<bool>& required_blocks,
             DenseMatrix<MATRIX*>& block_matrix_pt) const
  {
-
+  
+  unsigned n_block_types;
+  
   // Cache number of block types
-  const unsigned n_block_types=this->Nblock_types;
-
+  if(Prec_blocks_has_been_set)
+  {
+    n_block_types=Block_to_block_map.size();
+  }
+  else
+  {
+    n_block_types=this->Nblock_types;
+  }
 #ifdef PARANOID
   // If required blocks matrix pointer is not the correct size then abort.
   if ((required_blocks.nrow() != n_block_types) ||
@@ -3602,7 +3653,88 @@ namespace oomph
  /// vector, b. Here n is the block number in the current preconditioner.
  //============================================================================
  template<typename MATRIX> void BlockPreconditioner<MATRIX>::
- get_block_vector(const unsigned& b, const DoubleVector& v, DoubleVector& w)
+ get_block_blocked_vector(const unsigned& b, const DoubleVector& v, DoubleVector& w)
+  const
+ {
+#ifdef PARANOID
+  // the number of blocks
+  unsigned n_blocks = Block_to_block_map.size();
+
+  // paranoid check that block i is in this block preconditioner
+  if (b >= n_blocks)
+   {
+    std::ostringstream error_message;
+    error_message << "Requested block  vector " << b
+                  << ", however this preconditioner has merged blocks "
+                  << "= " << n_blocks << std::endl;
+    throw OomphLibError(error_message.str(),
+                        "BlockPreconditioner::get_block_vector(...)",
+                        OOMPH_EXCEPTION_LOCATION);
+   }
+  if (!v.built())
+   {
+    std::ostringstream error_message;
+    error_message << "The distribution of the global vector v must be setup.";
+    throw OomphLibError(error_message.str(),
+                        "BlockPreconditioner::get_block_vector(...)",
+                        OOMPH_EXCEPTION_LOCATION);
+   }
+  if (*(v.distribution_pt()) != *(this->master_distribution_pt()))
+   {
+    std::ostringstream error_message;
+    error_message << "The distribution of the global vector v must match the "
+                  << " specified master_distribution_pt(). \n"
+                  << "i.e. Distribution_pt in the master preconditioner";
+    throw OomphLibError(error_message.str(),
+                        "BlockPreconditioner::get_block_vector(...)",
+                        OOMPH_EXCEPTION_LOCATION);
+   }
+#endif
+  
+  // loop through the blocks defined by b.
+  unsigned nblocks_to_cat = Block_to_block_map[b].size();
+  
+  // loop through the blocks defined by b and get the total number of entires.
+  long unsigned w_nrow = 0;
+  for (unsigned i = 0; i < nblocks_to_cat; i++) 
+  {
+    unsigned current_block = Block_to_block_map[b][i];
+    w_nrow += Block_distribution_pt[current_block]->nrow();
+  }
+
+  // Create a new distribution with the correct nrow
+  bool distributed = this->master_distribution_pt()->distributed();
+  LinearAlgebraDistribution* new_distribution_pt
+    = new LinearAlgebraDistribution(problem_pt()->communicator_pt(),
+                                    w_nrow,distributed);
+
+  // rebuild the block vector
+  w.build(new_distribution_pt,0.0);
+  // Working vectors
+  DoubleVector temp_vec;
+  
+  unsigned long w_nrow_i = 0;
+  for (unsigned i = 0; i < nblocks_to_cat; i++) 
+  {
+    this->get_block_natural_vector(Block_to_block_map[b][i],v,temp_vec);
+    unsigned long current_block_nrow = temp_vec.nrow();
+
+    for (unsigned current_block_i = 0; current_block_i < current_block_nrow; 
+         current_block_i++) 
+    {
+      w[w_nrow_i] = temp_vec[current_block_i];
+      w_nrow_i++;
+    }
+    temp_vec.clear();
+  }
+ }
+
+ //============================================================================
+ /// \short Takes the naturally ordered vector, v, and extracts the n-th block
+ /// vector, b. Here n is the block number in the current preconditioner.
+ //============================================================================
+ template<typename MATRIX> void BlockPreconditioner<MATRIX>::
+ get_block_natural_vector(const unsigned& b, const DoubleVector& v, DoubleVector& w)
   const
  {
 #ifdef PARANOID
@@ -3765,6 +3897,24 @@ namespace oomph
  }
 
  //============================================================================
+ /// \short Takes the naturally ordered vector, v, and extracts the n-th block
+ /// vector, b. Here n is the block number in the current preconditioner.
+ //============================================================================
+ template<typename MATRIX> void BlockPreconditioner<MATRIX>::
+ get_block_vector(const unsigned& b, const DoubleVector& v, DoubleVector& w)
+  const
+ {
+   if(Prec_blocks_has_been_set)
+   {
+     get_block_blocked_vector(b,v,w);
+   }
+   else
+   {
+     get_block_natural_vector(b,v,w);
+   }
+ }
+
+ //============================================================================
  /// \short Takes the n-th block ordered vector, b, and copies its entries to
  /// the appropriate entries in the naturally ordered vector, v. Here n is the
  /// block number in the current block preconditioner. If the preconditioner is
@@ -3772,7 +3922,85 @@ namespace oomph
  /// associated with it are left alone
  //============================================================================
  template<typename MATRIX> void BlockPreconditioner<MATRIX>::
- return_block_vector(const unsigned& b, const DoubleVector& w, DoubleVector& v)
+ return_block_blocked_vector(const unsigned& b, const DoubleVector& w, DoubleVector& v)
+  const
+ {
+#ifdef PARANOID
+  // the number of blocks
+  unsigned n_blocks = Block_to_block_map.size();
+
+  // paranoid check that block i is in this block preconditioner
+  if (b >= n_blocks)
+   {
+    std::ostringstream error_message;
+    error_message << "Requested block  vector " << b
+                  << ", however this preconditioner has nblock_types() "
+                  << "= " << nblock_types() << std::endl;
+    throw OomphLibError(error_message.str(),
+                        "BlockPreconditioner::return_block_vector(...)",
+                        OOMPH_EXCEPTION_LOCATION);
+   }
+  if (!v.built())
+   {
+    std::ostringstream error_message;
+    error_message << "The distribution of the global vector v must be setup.";
+    throw OomphLibError(error_message.str(),
+                        "BlockPreconditioner::return_block_vector(...)",
+                        OOMPH_EXCEPTION_LOCATION);
+   }
+  if (*v.distribution_pt() != *this->master_distribution_pt())
+   {
+    std::ostringstream error_message;
+    error_message << "The distribution of the global vector v must match the "
+                  << " specified master_distribution_pt(). \n"
+                  << "i.e. Distribution_pt in the master preconditioner";
+    throw OomphLibError(error_message.str(),
+                        "BlockPreconditioner::return_block_vector(...)",
+                        OOMPH_EXCEPTION_LOCATION);
+   }
+  if (!w.built())
+   {
+    std::ostringstream error_message;
+    error_message << "The distribution of the block vector w must be setup.";
+    throw OomphLibError(error_message.str(),
+                        "BlockPreconditioner::return_block_vector(...)",
+                        OOMPH_EXCEPTION_LOCATION);
+   }
+#endif
+    
+  // Need to split up the vector and return it one by one.
+  DoubleVector temp_vec;
+  unsigned long global_row_i = 0;
+  unsigned nblocks_to_split_into=Block_to_block_map[b].size();
+  for(unsigned i = 0; i< nblocks_to_split_into; i++)
+  {
+    temp_vec.clear();
+    unsigned current_subblock = Block_to_block_map[b][i];
+    unsigned long current_block_nrow 
+      = Block_distribution_pt[current_subblock]->nrow();
+    temp_vec.build(Block_distribution_pt[current_subblock],0.0);
+
+    for(unsigned long current_block_nrow_i = 0; 
+        current_block_nrow_i < current_block_nrow;
+        current_block_nrow_i++)
+    {
+      temp_vec[current_block_nrow_i] = w[global_row_i];
+      global_row_i++;
+    }
+     
+    this->return_block_natural_vector(current_subblock,temp_vec,v);
+  } //  loop though the block vectors
+ }
+
+ //============================================================================
+ /// \short Takes the n-th block ordered vector, b, and copies its entries to
+ /// the appropriate entries in the naturally ordered vector, v. Here n is the
+ /// block number in the current block preconditioner. If the preconditioner is
+ /// a subsidiary block preconditioner the other entries in v that are not
+ /// associated with it are left alone
+ //============================================================================
+ template<typename MATRIX> void BlockPreconditioner<MATRIX>::
+ return_block_natural_vector(const unsigned& b, const DoubleVector& w, DoubleVector& v)
   const
  {
 #ifdef PARANOID
@@ -3952,6 +4180,28 @@ namespace oomph
    }
  }
 
+
+ //============================================================================
+ /// \short Takes the n-th block ordered vector, b, and copies its entries to
+ /// the appropriate entries in the naturally ordered vector, v. Here n is the
+ /// block number in the current block preconditioner. If the preconditioner is
+ /// a subsidiary block preconditioner the other entries in v that are not
+ /// associated with it are left alone
+ //============================================================================
+ template<typename MATRIX> void BlockPreconditioner<MATRIX>::
+ return_block_vector(const unsigned& b, const DoubleVector& w, DoubleVector& v)
+  const
+ {
+   if(Prec_blocks_has_been_set)
+   {
+     return_block_blocked_vector(b,w,v);
+   }
+   else
+   {
+     return_block_natural_vector(b,w,v);
+   }
+ }
+
  //=============================================================================
  /// \short Given the naturally ordered vector, v, return the vector rearranged
  /// in block order in w.
@@ -3966,8 +4216,8 @@ namespace oomph
     std::ostringstream error_message;
     error_message << "The distribution of the global vector v must be setup.";
     throw OomphLibError(error_message.str(),
-                        "BlockPreconditioner::get_block_vector(...)",
-                        OOMPH_EXCEPTION_LOCATION);
+      "BlockPreconditioner::get_blocked_ordred_preconditioner_vecotor(...)",
+      OOMPH_EXCEPTION_LOCATION);
    }
   if (*v.distribution_pt() != *this->master_distribution_pt())
    {
@@ -3976,8 +4226,8 @@ namespace oomph
                   << " specified master_distribution_pt(). \n"
                   << "i.e. Distribution_pt in the master preconditioner";
     throw OomphLibError(error_message.str(),
-                        "BlockPreconditioner::get_block_vector(...)",
-                        OOMPH_EXCEPTION_LOCATION);
+      "BlockPreconditioner::get_blocked_ordred_preconditioner_vecotor(...)",
+      OOMPH_EXCEPTION_LOCATION);
    }
 #endif
 

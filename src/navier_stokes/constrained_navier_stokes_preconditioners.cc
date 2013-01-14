@@ -741,11 +741,11 @@ namespace oomph
   // Copy pressure values from residual vector to temp_vec:
   // Loop over all entries in the global vector (this one
   // includes velocity and pressure dofs in some random fashion)
-  //this->get_block_vector(1,r,temp_vec);
+  this->get_block_vector(1,r,temp_vec);
   //this->get_block_vector(Master_doftype_order[N_velocity_doftypes],
   //r,temp_vec);
   
-  this->get_block_vector(N_velocity_doftypes,r,temp_vec);
+  //this->get_block_natural_vector(N_velocity_doftypes,r,temp_vec);
   
   // NOTE: The vector temp_vec now contains the vector r_p.
 
@@ -836,9 +836,9 @@ namespace oomph
   // Loop over all entries in the global results vector z:
   temp_vec.build(another_temp_vec.distribution_pt(),0.0);
   temp_vec -= another_temp_vec;
-//  this->return_block_vector(Master_doftype_order[N_velocity_doftypes],temp_vec,z);
-  this->return_block_vector(N_velocity_doftypes,temp_vec,z);
   
+  //this->return_block_natural_vector(N_velocity_doftypes,temp_vec,z);
+  this->return_block_vector(1,temp_vec,z);
 
     
   // Step 2 - apply preconditioner to velocity unknowns (block 0)
@@ -860,13 +860,13 @@ namespace oomph
   // The vector another_temp_vec is no longer needed -- re-use it to store
   // velocity quantities:
   another_temp_vec.clear();
-
+/*  
   // Concat the velocity RHS:
   unsigned long v_nrow = 0;
   for (unsigned i = 0; i < N_velocity_doftypes; i++) 
   {
 //    this->get_block_vector(Master_doftype_order[i],r,another_temp_vec);
-    this->get_block_vector(i,r,another_temp_vec);
+    this->get_block_natural_vector(i,r,another_temp_vec);
     v_nrow += another_temp_vec.nrow();
     another_temp_vec.clear();
   }
@@ -882,7 +882,7 @@ namespace oomph
   for (unsigned i = 0; i < N_velocity_doftypes; i++) 
   {
 //    this->get_block_vector(Master_doftype_order[i],r,another_temp_vec);
-    this->get_block_vector(i,r,another_temp_vec);
+    this->get_block_natural_vector(i,r,another_temp_vec);
     unsigned long current_block_nrow = another_temp_vec.nrow();
 
     for (unsigned current_block_i = 0; current_block_i < current_block_nrow; 
@@ -894,16 +894,16 @@ namespace oomph
     another_temp_vec.clear();
   }
   
-  
+  */ 
 
   // Loop over all enries in the global vector and find the
   // entries associated with the velocities:
-  //get_block_vector(0,r,another_temp_vec);
-  //another_temp_vec += temp_vec;
+  get_block_vector(0,r,another_temp_vec);
+  another_temp_vec += temp_vec;
  
   //yet_another_temp_vec contained the merged blocks in the order we want.
-  yet_another_temp_vec += temp_vec;
-  temp_vec.clear();
+  //yet_another_temp_vec += temp_vec;
+  //temp_vec.clear();
 
 
   // NOTE:  The vector another_temp_vec now contains r_u - G z_p
@@ -927,20 +927,21 @@ namespace oomph
   if (F_preconditioner_is_block_preconditioner)
    {
     pause("should not get here.... from NS prec solve...");
-    return_block_vector(0,yet_another_temp_vec,z);
+    return_block_natural_vector(0,yet_another_temp_vec,z);
     F_preconditioner_pt->preconditioner_solve(z,z);
    }
   else
    {
+    F_preconditioner_pt->preconditioner_solve(another_temp_vec, temp_vec);
+    return_block_vector(0,temp_vec,z);
+     /* 
     F_preconditioner_pt->preconditioner_solve(yet_another_temp_vec, temp_vec);
-
     unsigned long global_row_i = 0;
     for(unsigned i = 0; i< N_velocity_doftypes; i++)
     {
       another_temp_vec.clear();
      
-//      this->get_block_vector(Master_doftype_order[i],r,another_temp_vec);
-      this->get_block_vector(i,r,another_temp_vec);
+      this->get_block_natural_vector(i,r,another_temp_vec);
      
       unsigned long current_block_nrow = another_temp_vec.nrow();
       
@@ -953,10 +954,11 @@ namespace oomph
       }
      
 //      this->return_block_vector(Master_doftype_order[i],another_temp_vec,z);
-      this->return_block_vector(i,another_temp_vec,z);
+      this->return_block_natural_vector(i,another_temp_vec,z);
     } //  loop though the block vectors
 
     //this->return_block_vector(Master_doftype_order[i],another_temp_vec,z);
+   */
    }
  }
 
