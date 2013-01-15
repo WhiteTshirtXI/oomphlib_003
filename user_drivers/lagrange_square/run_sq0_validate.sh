@@ -1,14 +1,12 @@
 #!/bin/bash
 run_tests()
 {
-
-
 #PRECLIST="0 1 2" # Doing either full exact or Exact Navier Stokes
 # 0 - W SuperLU, NS SuperLU
 # 1 - W SuperLU, NS LSC: P SuperLU, F SuperLU
 # 2 - W SuperLU, NS LSC: P AMG, F AMG
 
-PRECLIST="0"
+PRECLIST="0 1"
 # The precs are set according to the PRECLIST above.
 WPRECLIST="0" # 0 - Exact
 NSPRECLIST="0" # 0 - Exact, 1 - LSC
@@ -86,7 +84,8 @@ done
 
 } # run_tests function
 
-VALIDATA="RAYITS_squ0_PRECLIST0"
+#VALIDATA="RAYITS_squ0_PRECLIST0"
+VALIDATA="RAYITS_squ0_PRECLIST01"
 OUTFILE="temp.dat"
 
 OOMPHPATH="/home/ray/learning/phd/wulfling/oomphlib_current/"
@@ -95,11 +94,8 @@ cd $OOMPHPATH/user_drivers/lagrange_square/ && \
 make square0 && run_tests > ./validata/$OUTFILE && \
 egrep "RAYITS" ./validata/$OUTFILE > ./validata/RAYITS_$OUTFILE && \
 rm -rf ./validata/$OUTFILE && \
-echo "diff ./validata/RAYITS_$OUTFILE ./validata/$VALIDATA"
+diff ./validata/RAYITS_$OUTFILE ./validata/$VALIDATA
 
 rm -rf ./validata/RAYITS_$OUTFILE
-
-
-
 
 
