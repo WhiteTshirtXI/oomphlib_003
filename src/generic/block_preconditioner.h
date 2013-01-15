@@ -303,20 +303,17 @@ namespace oomph
      {
        for (unsigned j = 0; j < blockmapping[i].size(); j++)
        {
-         pause("Got in j loop"); 
-         
          std::set<unsigned>::iterator block_map_it;
          std::pair<std::set<unsigned>::iterator,bool> block_map_ret;
-         std::cout << "adding... " << Block_to_block_map[i][j] << std::endl; 
-         pause("done"); 
-           
-         block_map_ret = block_map_set.insert(Block_to_block_map[i][j]);
+         std::cout << "adding... " << blockmapping[i][j] << std::endl; 
+         
+         block_map_ret = block_map_set.insert(blockmapping[i][j]);
          if(!block_map_ret.second)
          {
    	       std::ostringstream error_message;
            error_message << "Error: the block number "
-                         << Block_to_block_map[i][j]
-                         << " is already inserted in Block_to_block_map." 
+                         << blockmapping[i][j]
+                         << " is already inserted." 
                          << std::endl;
 	         throw OomphLibError(error_message.str(),
                             "BlockPreconditioner::set_prec_blocks",
@@ -324,10 +321,6 @@ namespace oomph
          }
        }
      }
-     
-      std::cout << "block_map_set size: " << block_map_set.size() << std::endl; 
-      
-     pause("done test"); 
      
      if(prec_blocks_nrow != block_map_set.size())
      {
@@ -345,16 +338,6 @@ namespace oomph
 
      Prec_blocks = prec_block_pts;
      Block_to_block_map = blockmapping;
-     for (unsigned i = 0; i < Block_to_block_map.size(); i++) 
-     {
-       for (unsigned j = 0; j < Block_to_block_map[i].size(); j++) 
-       {
-         std::cout << "(" << i << ","<<j<<")" << Block_to_block_map[i][j] << std::endl; 
-        
-       }
-     }
-
-
      Prec_blocks_has_been_set = true;
    }
 
