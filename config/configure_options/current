@@ -103,7 +103,7 @@
 --enable-symbolic-links-for-headers
 --with-hypre=/usr/lib/libHYPRE.so
 --with-mpi-self-tests="mpirun -np 2"
-CXXFLAGS="-g -DPARANOID -Wall"
+CXXFLAGS="-g -DPARANOID -Wall -Wcast-qual -Wredundant-decls"
 CFLAGS="-g"
 FFLAGS="-g"
 FFLAGS_NO_OPT="-O0"

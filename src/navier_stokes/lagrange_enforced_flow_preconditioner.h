@@ -1123,7 +1123,7 @@ class LagrangeEnforcedflowPreconditioner
       {
         block_setup_bcpl[temp_index] = dim_i + mesh_i*elemental_dimension;
         temp_index++;
-      }
+      } // for
 
       for (unsigned doftype_i = elemental_dimension; 
            doftype_i < N_doftype_in_mesh[mesh_i]; doftype_i++) 
@@ -1131,19 +1131,18 @@ class LagrangeEnforcedflowPreconditioner
         block_setup_bcpl[temp_index] = lagrange_entry;
         lagrange_entry++;
         temp_index++;
-      }
-    }
-  }
+      } // for
+    } // for
+  } // Encapsulation
 
 //  std::cout << "block_setup_bcpl:" << std::endl; 
 //  for (unsigned i = 0; i < block_setup_bcpl.size(); i++) 
 //  {
 //    std::cout << block_setup_bcpl[i] << std::endl;
 //  }
-//  pause("Done the block_setup_bcpl"); 
+  //pause("Done the block_setup_bcpl"); 
 
 
-//this->block_setup(problem_pt,matrix_pt,block_setup_bcpl);
 this->block_setup(block_setup_bcpl);
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
@@ -1502,7 +1501,8 @@ this->block_setup(block_setup_bcpl);
   {
     std::ostringstream warning_stream;
     warning_stream << "WARNING: " << std::endl
-                   << "The scaling (Scaling_sigma) is " << Scaling_sigma << std::endl
+                   << "The scaling (Scaling_sigma) is " 
+                   << Scaling_sigma << std::endl
                    << "Division by Scaling_sigma = 0 will implode the world."
                    << std::endl;
     OomphLibWarning(warning_stream.str(),
@@ -1513,7 +1513,8 @@ this->block_setup(block_setup_bcpl);
   {
     std::ostringstream warning_stream;
     warning_stream << "WARNING: " << std::endl
-                   << "The scaling (Scaling_sigma) is " << Scaling_sigma << std::endl
+                   << "The scaling (Scaling_sigma) is " 
+                   << Scaling_sigma << std::endl
                    << "Performance may be degraded."
                    << std::endl;
     OomphLibWarning(warning_stream.str(),
@@ -1821,13 +1822,17 @@ this->block_setup(block_setup_bcpl);
   // AT this point, we have created the aumented fluid block in v_aug_pts
   // and the w block in w_pts.
   //
+  /////////////////////////////////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////////////////////////
+
 //*
   // Setup the fluid subsidiary precoditioner
   //
   // We solve the fluid block using different preconditioners.
   //
   // 1) For exact block preconditioning, we use the SuperLU solver.
-  // For this, we have to for the fluid block.
+  // For this, we have to form the fluid block by extracting the 
+  // pressure matrices.
   //
   // 2) For Exact lsc block preconditioning we do not need to form the whole
   // fluid block since the pressure and velocity are solved separately.
@@ -1969,22 +1974,22 @@ this->block_setup(block_setup_bcpl);
 //      }
 //    }
 //
-//    // Extract the b block: ///////////////////////////////////////////////////
+//    // Extract the b block: /////////////////////////////////////////////////
 //    double t_get_B_start = TimingHelpers::timer();
 //
 //    DenseMatrix<CRDoubleMatrix* > b_pts(1,N_velocity_doftypes,0);
-//
-//    // Encapsulation of the variable row_i
+
+    // Encapsulation of the variable row_i
 //    {
-//      // The pressure block is located here in the vpl ordering.
+      // The pressure block is located here in the vpl ordering.
 //      unsigned row_i = N_velocity_doftypes;
-//
-//      // Loop through the velocity blocks columns.
+
+      // Loop through the velocity blocks columns.
 //      for(unsigned col_i = 0; col_i < N_velocity_doftypes; col_i++)
 //      {
-//        //        this->get_block(Doftype_list_vpl[row_i], Doftype_list_vpl[col_i],
-//        //                        cr_matrix_pt,b_pts(0,col_i));
-//        this->get_block(row_i,col_i,cr_matrix_pt,b_pts(0,col_i));
+//        //this->get_block(Doftype_list_vpl[row_i], Doftype_list_vpl[col_i],
+//        //                cr_matrix_pt,b_pts(0,col_i));
+//        this->get_block(row_i,col_i,b_pts(0,col_i));
 //      }//for(unsigned col_i = 0; col_i < N_velocity_doftypes; col_i++)
 //    }
 //
@@ -1999,7 +2004,10 @@ this->block_setup(block_setup_bcpl);
 //    // merge the sub-blocks.
 //    double t_merge_B_start = TimingHelpers::timer();
 //    cat(b_pts,prec_blocks[1]);
-//    double t_merge_B_finish = TimingHelpers::timer();
+//    prec_blocks[1]->sparse_indexed_output("b_pt_old");
+//    pause("done b_pt"); 
+    
+    //    double t_merge_B_finish = TimingHelpers::timer();
 //    if(Doc_time)
 //    {
 //      double t_merge_B_time = t_merge_B_finish - t_merge_B_start;
@@ -2069,12 +2077,11 @@ this->block_setup(block_setup_bcpl);
 //
 //*/
 //
-
     Vector<unsigned> ns_dof_list(N_fluid_doftypes,0);
     for (unsigned i = 0; i < N_fluid_doftypes; i++)
     {
       ns_dof_list[i]= Doftype_list_bcpl[i];
-      //      std::cout << "ns_dof_list: " << ns_dof_list[i] << std::endl; 
+      //std::cout << "ns_dof_list: " << ns_dof_list[i] << std::endl; 
     }
 
     // Determine whether the NS preconditioner is a block preconditioner (and
@@ -2083,11 +2090,12 @@ this->block_setup(block_setup_bcpl);
     BlockPreconditioner<CRDoubleMatrix>* Navier_stokes_block_preconditioner_pt
       = dynamic_cast<BlockPreconditioner<CRDoubleMatrix>* >
       (Navier_stokes_preconditioner_pt);
+
     if(Navier_stokes_block_preconditioner_pt == 0)
     {
       std::ostringstream error_message;
       error_message << "Navier stokes preconditioner is not a block\n"
-        << "preconditioner." << std::endl;
+                    << "preconditioner." << std::endl;
       throw OomphLibError(
           error_message.str(),
           "LagrangeEnforcedflowPreconditioner::setup()",
@@ -2099,8 +2107,6 @@ this->block_setup(block_setup_bcpl);
       (Navier_stokes_preconditioner_pt);
 #endif
 
-
-
     Navier_stokes_block_preconditioner_pt
       ->turn_into_subsidiary_block_preconditioner(this, ns_dof_list);
 
@@ -2109,8 +2115,23 @@ this->block_setup(block_setup_bcpl);
 
 //    Navier_stokes_block_preconditioner_pt
 //      ->set_prec_blocks(prec_blocks);
+    Vector<Vector<unsigned> > blocktoblockvec;
+    
+    Vector<unsigned> ns_v_vec(N_velocity_doftypes,0);
+    for (unsigned i = 0; i < N_velocity_doftypes; i++) 
+    {
+      ns_v_vec[i]=i;
+    }
+    blocktoblockvec.push_back(ns_v_vec);
+
+    Vector<unsigned> ns_p_vec(1,0);
+    ns_p_vec[0] = N_velocity_doftypes;
+
+    blocktoblockvec.push_back(ns_p_vec);
+
+
     Navier_stokes_block_preconditioner_pt
-      ->set_prec_blocks(f_aug_ptrs);
+      ->set_prec_blocks(f_aug_ptrs,blocktoblockvec);
 
     Navier_stokes_block_preconditioner_pt
       ->setup(problem_pt(),matrix_pt());
@@ -2129,7 +2150,7 @@ this->block_setup(block_setup_bcpl);
 //delete v_aug_pts;
 //CLEAR w_pts
 
-////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 
   // Solver for the W block.
   double t_w_prec_start = TimingHelpers::timer();

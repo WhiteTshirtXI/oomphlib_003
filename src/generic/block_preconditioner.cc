@@ -34,14 +34,26 @@ namespace oomph
  /// Defaults to false.
  template<typename MATRIX> 
  bool BlockPreconditioner<MATRIX>::Run_block_matrix_test=false;
- 
+
 //=============================================================================
 /// \short Gets block (i,j) from the original matrix and returns it in
 /// block_matrix_pt (Specialisation for CCDoubleMatrix)
 //=============================================================================
  template<> 
  void BlockPreconditioner<CCDoubleMatrix>:: 
- get_block(const unsigned& i, const unsigned& j, 
+ get_block_blocked_matrix(const unsigned& i, const unsigned& j, 
+	    CCDoubleMatrix*& block_pt) const
+ {
+   pause("Not supposed to get here yet");
+ } 
+
+//=============================================================================
+/// \short Gets block (i,j) from the original matrix and returns it in
+/// block_matrix_pt (Specialisation for CCDoubleMatrix)
+//=============================================================================
+ template<> 
+ void BlockPreconditioner<CCDoubleMatrix>:: 
+ get_block_natural_matrix(const unsigned& i, const unsigned& j, 
 	    CCDoubleMatrix*& block_pt) const
  {
 
@@ -154,16 +166,79 @@ namespace oomph
    }
  }
 
-
 //=============================================================================
+/// \short Gets block (i,j) from the original matrix and returns it in
+/// block_matrix_pt (Specialisation for CCDoubleMatrix)
+//=============================================================================
+ template<> 
+ void BlockPreconditioner<CCDoubleMatrix>:: 
+ get_block(const unsigned& i, const unsigned& j, 
+	    CCDoubleMatrix*& block_pt) const
+ {
+   if(Prec_blocks_has_been_set)
+     get_block_blocked_matrix(i,j,block_pt);
+   else
+     get_block_natural_matrix(i,j,block_pt);
+ } 
+
+ //=============================================================================
 /// \short Gets block (i,j) from the original matrix and returns it in
 /// block_matrix_pt (Specialisation for CRDoubleMatrix)
 //=============================================================================
  template<> 
  void BlockPreconditioner<CRDoubleMatrix>:: 
- get_block(const unsigned& block_i, const unsigned& block_j, 
+ get_block_blocked_matrix(const unsigned& block_i, const unsigned& block_j, 
 	    CRDoubleMatrix*& block_pt) const
  {
+#ifdef PARANOID
+  // the number of blocks
+  unsigned n_blocks = this->nblock_types();
+
+  // paranoid check that block i is in this block preconditioner
+  if (block_i >= n_blocks || block_j >= n_blocks)
+   {
+    std::ostringstream error_message;
+    error_message << "Requested block (" << block_i << "," << block_j   
+                  << "), however this preconditioner has nblock_types() "
+                  << "= " << nblock_types() << std::endl;
+    throw OomphLibError(error_message.str(),
+                        "BlockPreconditioner::get_block(...)",
+                        OOMPH_EXCEPTION_LOCATION);
+   }
+#endif
+
+  // Create the dense matrix required for the merge.
+  // How many block rows and columns?
+  unsigned nblock_in_row = Block_to_block_map[block_i].size();
+  unsigned nblock_in_col = Block_to_block_map[block_j].size();
+  
+  DenseMatrix<CRDoubleMatrix*> block_pts(nblock_in_row,nblock_in_col,0);
+  
+  // Full in he corresponding matrices.
+  for (unsigned block_row_i = 0; block_row_i < nblock_in_row; block_row_i++) 
+  {
+    unsigned prec_block_i = Block_to_block_map[block_i][block_row_i];
+    for (unsigned block_col_i = 0; block_col_i < nblock_in_col; block_col_i++) 
+    {
+      unsigned prec_block_j = Block_to_block_map[block_j][block_col_i];
+
+      block_pts(block_row_i,block_col_i) = Prec_blocks(prec_block_i,
+                                                       prec_block_j);
+    }
+  }
+
+  cat(block_pts,block_pt);
+ }
+
+ //=============================================================================
+/// \short Gets block (i,j) from the original matrix and returns it in
+/// block_matrix_pt (Specialisation for CRDoubleMatrix)
+//=============================================================================
+ template<> 
+ void BlockPreconditioner<CRDoubleMatrix>:: 
+ get_block_natural_matrix(const unsigned& block_i, const unsigned& block_j, 
+	    CRDoubleMatrix*& block_pt) const
+{
 
 #ifdef PARANOID
   // the number of blocks
@@ -182,14 +257,13 @@ namespace oomph
    }
 #endif
 
-    // Cast the pointer
-    CRDoubleMatrix* cr_matrix_pt = dynamic_cast<CRDoubleMatrix*>(matrix_pt());
+  // Cast the pointer
+  CRDoubleMatrix* cr_matrix_pt = dynamic_cast<CRDoubleMatrix*>(matrix_pt());
 
-  // if + only one processor
-  //    + more than one processor but matrix_pt is not distributed
-  // then use the serial get_block method
-    if (cr_matrix_pt->distribution_pt()->communicator_pt()->nproc() == 1 ||
-	!cr_matrix_pt->distribution_pt()->distributed())
+  // If only one processor or more than one processor but matrix_pt 
+  // is not distributed then use the serial get_block method
+  if (cr_matrix_pt->distribution_pt()->communicator_pt()->nproc() == 1 ||
+	    !cr_matrix_pt->distribution_pt()->distributed())
    {
     // pointers for the jacobian matrix is compressed row sparse format 
     int* j_row_start;
@@ -197,9 +271,9 @@ namespace oomph
     double* j_value;
     
     // sets pointers to jacobian matrix
-	j_row_start = cr_matrix_pt->row_start();
-	j_column_index = cr_matrix_pt->column_index();
-	j_value = cr_matrix_pt->value();
+    j_row_start = cr_matrix_pt->row_start();
+    j_column_index = cr_matrix_pt->column_index();
+    j_value = cr_matrix_pt->value();
     
     // get the block dimensions
     unsigned block_nrow = this->block_dimension(block_i);
@@ -695,6 +769,21 @@ namespace oomph
 #endif 
    }
  }
+
+//=============================================================================
+/// \short Gets block (i,j) from the original matrix and returns it in
+/// block_matrix_pt (Specialisation for CRDoubleMatrix)
+//=============================================================================
+ template<> 
+ void BlockPreconditioner<CRDoubleMatrix>:: 
+ get_block(const unsigned& block_i, const unsigned& block_j, 
+	    CRDoubleMatrix*& block_pt) const
+ {
+   if(Prec_blocks_has_been_set)
+     get_block_blocked_matrix(block_i,block_j,block_pt);
+   else
+     get_block_natural_matrix(block_i,block_j,block_pt);
+ } 
  
 
 //=============================================================================
