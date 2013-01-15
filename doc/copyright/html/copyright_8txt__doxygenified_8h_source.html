@@ -1,0 +1,299 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>oomph-lib</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link rel="stylesheet" type="text/css" href="doxygen.css">
+<link rel="stylesheet" type="text/css" href="../../oomph_header.css">
+<!-- The  following script does the hide/show trick-->
+<script language="JavaScript" type="text/javascript" 
+        src="../../navbar_toggle.js" >
+</script>
+<!-- The  following script
+ ensures that the required field on the download form get filled in-->
+<script language="JavaScript">
+<!--
+function formCheck(formobj){
+    // mandatory fields
+    var fieldRequired = Array("name", "affiliation", "email", "why");
+    // description to appear in the dialog box
+    var fieldDescription = Array("name", "affiliation", "email", 
+                                 "Why are you interested in oomph-lib?");
+    // dialog message
+    var alertMsg = "Please complete the following fields:\n";
+    var l_Msg = alertMsg.length;
+    for (var i = 0; i < fieldRequired.length; i++){
+        var obj = formobj.elements[fieldRequired[i]];
+        if (obj){
+            switch(obj.type){
+            case "select-one":
+                if (obj.selectedIndex == -1 || 
+                    obj.options[obj.selectedIndex].text == ""){
+                    alertMsg += " - " + fieldDescription[i] + "\n";
+                }
+                break;
+            case "select-multiple":
+                if (obj.selectedIndex == -1){
+                    alertMsg += " - " + fieldDescription[i] + "\n";
+                }
+                break;
+            case "text":
+            case "textarea":
+                if (obj.value == "" || obj.value == null){
+                    alertMsg += " - " + fieldDescription[i] + "\n";
+                }
+                break;
+            default:
+            }
+            if (obj.type == undefined){
+                var blnchecked = false;
+                for (var j = 0; j < obj.length; j++){
+                    if (obj[j].checked){
+                        blnchecked = true;
+                    }
+                }
+                if (!blnchecked){
+                    alertMsg += " - " + fieldDescription[i] + "\n";
+                }
+            }
+        }
+    }
+    if (alertMsg.length == l_Msg){
+        return true;
+    }else{
+        alert(alertMsg);
+        return false;
+    }
+}
+// -->
+</script>
+<body onLoad="visibilitytoggle()"> <!-- This is required for the "Click'n'view" fct to work! -->
+<div class="header">
+<p class="logo"><a href="../../../doc/html/index.html"><img src="../../../doc/figures/oomph.png" alt="oomph-lib logo: Link to oomph-lib homepage" border=0></a></p>
+<div class="head-section">
+<div id="hotspot" name="hotspot" class="hotspot" 
+     title="click to expand the navigation menu">Documentation,<br/>
+     example codes and tutorials</div> 
+<dl style="" id="toggle" name="toggle" class="toggle">  
+<dt><a href="../../../doc/index/html/index.html">Index</a></dt>
+<dt><a href="../../../doc/example_code_list/html/index.html">List of tutorials/demo codes</a></dt>
+<dt><a href="../../../doc/quick_guide/html/index.html">The (Not-so) Quick Guide</a></dt>
+<dt><a href="../../../doc/intro/html/index.html">FE theory and top-down discussion of the data structure</a></dt>
+      <dt><a href="../../../doc/the_data_structure/html/index.html">Comprehensive bottom-up discussion of the data
+      structure</a></dt>
+      <dt><a href="../../../doc/paraview/html/index.html"> Visualisation of the results </a></dt>
+      <dt><a href="../../../doc/coding_conventions/html/index.html">Coding conventions and C++ style</a></dt>
+      <dt><a href="../../../doc/creating_doc/html/index.html">Creating documentation</a></dt>
+      <dt><a href="../../../doc/optimisation/html/index.html">Optimisation</a>
+      </dt> 
+</dl>
+</div><!-- end section-->
+<div class="head-section">
+<div id="hotspot" name="hotspot" class="hotspot" 
+     title="click to expand the navigation menu">Parallel Processing</div> 
+<dl style="" id="toggle" name="toggle" class="toggle">  
+      <dt><a href="../../../doc/mpi/general_mpi/html/index.html"> Overview </a></dt>
+     <dt><a href="../../../doc/mpi/distributed_linear_algebra_infrastructure/html/index.html">
+     Distributed Linear Algebra </a></dt>
+     <dt><a href="../../../doc/mpi/distributed_block_preconditioners/html/index.html">
+     Distributed Block Preconditioners </a></dt>
+     <dt><a href="../../../doc/mpi/distributed_general_purpose_block_preconditioners/html/index.html">
+     Distributed General-Purpose Block Preconditioners </a></dt>
+</dl>
+</div>
+<div class="head-section">
+<div id="hotspot" name="hotspot" class="hotspot" 
+     title="click to expand the navigation menu"> Publications</div> 
+<dl style="" id="toggle" name="toggle" class="toggle">  
+    <dt><a href="../../../doc/publications/html/index.html">Publications</a>
+      <dd><a href="../../../doc/publications/html/index.html#talks">Talks</a></dd>
+      <dd><a href="../../../doc/publications/html/index.html#papers">Journal publications</a></dd>
+      <dd><a href="../../../doc/publications/html/index.html#theses">Theses</a></dd>
+    </dt>
+    <dt><a href="../../../doc/picture_show/index.html">Picture show </a></dt>
+</dl>
+</div><!-- end section-->
+<div class="head-section">
+<div id="hotspot" name="hotspot" class="hotspot" 
+     title="click to expand the navigation menu"> Download</div> 
+<dl style="" id="toggle" name="toggle" class="toggle">  
+    <dt><a href="../../../doc/copyright/html/index.html">Copyright</a></dt>
+    <dt><a href="../../../doc/the_distribution/html/index.html">Download/installation instructions</a></dt>
+    <dt><a href="../../../doc/download/html/index.html">Download page</a></dt>
+</dl>
+</div><!-- end section-->
+<div class="head-section">
+<div id="hotspot" name="hotspot" class="hotspot" 
+     title="click to expand the navigation menu">FAQ & Contact</div> 
+<dl style="" id="toggle" name="toggle" class="toggle">  
+    <dt><a href="../../../doc/FAQ/html/index.html">FAQ</a></dt>
+    <dt><a href="../../../doc/change_log/html/index.html">Change log</a></dt>
+    <dt><a href="../../../doc/bugs/html/index.html">Bugs and other known problems</a></dt>
+    <dt><a href="../../../doc/ToDo/html/index.html">Completeness of the library & our "To-Do List" </a></dt>
+    <dt><a href="../../../doc/contact/html/index.html">Contact the developers</a></dt>
+    <dt><a href="../../../doc/get_involved/html/index.html">Get involved </a></dt>
+</dl>
+</div><!-- end section-->
+<p class="clear">&nbsp;</p>
+</div><!-- end header -->
+<P>
+<HR>
+<TABLE BORDER=1, WIDTH=700px>
+<TR>
+<TD bgcolor="cornsilk">
+<CENTER><B>Beta release!</b></CENTER><br>
+Please note that the library has not been "officially" released.
+While we continue to work on the documentation, these web pages
+are likely to contain broken links and documents in draft form. 
+Please send an email to 
+<BR><BR>
+<CENTER>
+<TT>oomph-lib AT maths DOT man DOT ac DOT uk</TT>
+</CENTER>
+<BR> 
+if you wish to be informed of the library's "official" release.
+</TD>
+</TR>
+</TABLE>
+</CENTER>
+<HR>
+<script type="text/javascript">
+ function index_toggle(id,img) {
+  var e = document.getElementById(id);
+  var im = document.getElementById(img);
+  if (e.style.display == '')
+   {
+      e.style.display = 'none';
+      im.src="../expand.png";
+   }
+  else
+   {
+   e.style.display = '';
+   im.src = "../collapse.png";
+   }
+ }
+</script>
+</head>
+<!-- Generated by Doxygen 1.8.1.2 -->
+</div><!-- top -->
+<div class="header">
+  <div class="headertitle">
+<div class="title">copyright.txt_doxygenified.h</div>  </div>
+</div><!--header-->
+<div class="contents">
+<a href="copyright_8txt__doxygenified_8h.html">Go to the documentation of this file.</a><div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;<span class="comment">/**</span></div>
+<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;<span class="comment"></span></div>
+<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160;<span class="comment">\mainpage Copyright</span></div>
+<div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;<span class="comment"></span></div>
+<div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160;<span class="comment"></span></div>
+<div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;<span class="comment"> \c oomph-lib is &quot;open source&quot; software and may therefore be</span></div>
+<div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;<span class="comment">freely downloaded and distributed -- the full details</span></div>
+<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;<span class="comment">are given below. To facilitate the installation of the library,</span></div>
+<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;<span class="comment">the \c oomph-lib distribution includes (parts of)</span></div>
+<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;<span class="comment">certain other open source libraries (SuperLU, METIS and BLAS). </span></div>
+<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;<span class="comment">Redistribution of these libraries with \c oomph-lib has been</span></div>
+<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;<span class="comment">approved by their authors -- we suggest you get in touch with</span></div>
+<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;<span class="comment">them if you wish to re-distribute their libraries yet again.</span></div>
+<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;<span class="comment"></span></div>
+<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;<span class="comment">&lt;HR&gt;</span></div>
+<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;<span class="comment"></span></div>
+<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;<span class="comment">&lt;H2&gt;&lt;TT&gt;oomph-lib&#39;s&lt;/TT&gt; licencing terms&lt;/H2&gt; </span></div>
+<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;<span class="comment"></span></div>
+<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;<span class="comment">This library is free software; you can redistribute it and/or</span></div>
+<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;<span class="comment">modify it under the terms of the  </span></div>
+<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;<span class="comment">&lt;a href=&quot;http://www.gnu.org/licenses/lgpl.html&quot;&gt;</span></div>
+<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;<span class="comment">GNU Lesser General Public License </span></div>
+<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;<span class="comment">&lt;/a&gt; as published by the </span></div>
+<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;<span class="comment">&lt;a href=&quot;http://www.fsf.org/&quot;&gt;Free Software Foundation&lt;/a&gt; ; </span></div>
+<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;<span class="comment">either version 2.1 of the License, or (at your option) any later version.</span></div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;<span class="comment">This library is distributed in the hope that it will be useful,</span></div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;<span class="comment">but WITHOUT ANY WARRANTY; without even the implied warranty of</span></div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;<span class="comment">MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  </span></div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;<span class="comment">See the </span></div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;<span class="comment">&lt;a href=&quot;http://www.gnu.org/licenses/lgpl.html&quot;&gt;</span></div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;<span class="comment">GNU Lesser General Public License </span></div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;<span class="comment">&lt;/a&gt;</span></div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;<span class="comment">for more details.</span></div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;<span class="comment"></span></div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;<span class="comment">&lt;br&gt;</span></div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;<span class="comment">&lt;br&gt;</span></div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;<span class="comment"></span></div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;<span class="comment">Your use or distribution of \c oomph-lib or any derivative code </span></div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;<span class="comment">implies that you  agree to this License.</span></div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;<span class="comment"></span></div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;<span class="comment">&lt;br&gt;</span></div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;<span class="comment">&lt;br&gt;</span></div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;<span class="comment">Copyright (c) 2006-2008 by </span></div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;<span class="comment">&lt;a href=&quot;http://www.maths.man.ac.uk/~mheil&quot;&gt;Matthias Heil&lt;/a&gt; </span></div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;<span class="comment">and &lt;a href=&quot;http://www.maths.man.ac.uk/~ahazel&quot;&gt;Andrew L. Hazel&lt;/a&gt;.</span></div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;<span class="comment"></span></div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;<span class="comment">&lt;HR&gt;</span></div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;<span class="comment"></span></div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;<span class="comment"></span></div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;<span class="comment">&lt;H2&gt;Licencing details for SuperLU&lt;/H2&gt; </span></div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;<span class="comment">The \c oomph-lib distribution includes the double precision versions</span></div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;<span class="comment">of the sparse direct linear solver SuperLU (version 3.0 of the </span></div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;<span class="comment">serial version and version 2.0 of the distributed memory parallel</span></div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;<span class="comment">version). Full details of the </span></div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;<span class="comment">&lt;A HREF=&quot;http://crd.lbl.gov/~xiaoye/SuperLU&quot;&gt;SuperLU&lt;/A&gt; </span></div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;<span class="comment">licence may be found at </span></div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;<span class="comment">&lt;CENTER&gt;</span></div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;<span class="comment">&lt;A HREF=&quot;http://crd.lbl.gov/~xiaoye/SuperLU&quot;&gt;</span></div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;<span class="comment">http://crd.lbl.gov/~xiaoye/SuperLU&lt;/A&gt;</span></div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;<span class="comment">&lt;/CENTER&gt;</span></div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;<span class="comment"></span></div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;<span class="comment"></span></div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;<span class="comment">&lt;HR&gt;</span></div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;<span class="comment"></span></div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;<span class="comment">&lt;H2&gt;Licencing details for METIS&lt;/H2&gt; </span></div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;<span class="comment">The \c oomph-lib distribution includes version 4.0 of</span></div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;<span class="comment">George Karypis&#39;  </span></div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;<span class="comment">&lt;A HREF=&quot;http://www-users.cs.umn.edu/~karypis/metis/&quot;&gt;METIS&lt;/A&gt;</span></div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;<span class="comment">mesh partitioning library. Full details of the </span></div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;<span class="comment">&lt;A HREF=&quot;http://www-users.cs.umn.edu/~karypis/metis/&quot;&gt;METIS&lt;/A&gt;</span></div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;<span class="comment">licence may be found at </span></div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;<span class="comment">&lt;CENTER&gt;</span></div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;<span class="comment">&lt;A HREF=&quot;http://www-users.cs.umn.edu/~karypis/metis/&quot;&gt;</span></div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;<span class="comment">http://www-users.cs.umn.edu/~karypis/metis/</span></div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;<span class="comment">&lt;/A&gt;</span></div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;<span class="comment">&lt;/CENTER&gt;</span></div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;<span class="comment"></span></div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;<span class="comment"></span></div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;<span class="comment">&lt;HR&gt;</span></div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;<span class="comment"></span></div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;<span class="comment">&lt;H2&gt;Licencing details for BLAS/LAPACK&lt;/H2&gt; </span></div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;<span class="comment">The \c oomph-lib distribution includes the entire BLAS library</span></div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;<span class="comment">and a few functions from LAPACK.</span></div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;<span class="comment">Full licencing details for the </span></div>
+<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;<span class="comment">&lt;A HREF=&quot;http://www.netlib.org/blas/&quot;&gt;BLAS library&lt;/A&gt;</span></div>
+<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;<span class="comment">may be found at </span></div>
+<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;<span class="comment">&lt;CENTER&gt;</span></div>
+<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;<span class="comment">&lt;A HREF=&quot;http://www.netlib.org/blas/&quot;&gt;</span></div>
+<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;<span class="comment">http://www.netlib.org/blas/</span></div>
+<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;<span class="comment">&lt;/A&gt;</span></div>
+<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;<span class="comment">&lt;/CENTER&gt;</span></div>
+<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;<span class="comment">Full licencing details for the</span></div>
+<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;<span class="comment">&lt;A HREF=&quot;http://www.netlib.org/lapack/&quot;&gt;LIBRARY library&lt;/A&gt;</span></div>
+<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;<span class="comment">may be found at </span></div>
+<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;<span class="comment">&lt;CENTER&gt;</span></div>
+<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;<span class="comment">&lt;A HREF=&quot;http://www.netlib.org/lapack/&quot;&gt;</span></div>
+<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;<span class="comment">http://www.netlib.org/lapack/</span></div>
+<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;<span class="comment">&lt;/A&gt;</span></div>
+<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;<span class="comment">&lt;/CENTER&gt;</span></div>
+<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;<span class="comment">&lt;HR&gt;</span></div>
+<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;<span class="comment"></span></div>
+<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;<span class="comment">&lt;hr&gt;</span></div>
+<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;<span class="comment">&lt;hr&gt;</span></div>
+<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;<span class="comment">\section pdf PDF file</span></div>
+<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;<span class="comment">A &lt;a href=&quot;../latex/refman.pdf&quot;&gt;pdf version&lt;/a&gt; of this document is available.</span></div>
+<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;<span class="comment">**/</span></div>
+<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;</div>
+</div><!-- fragment --></div><!-- contents -->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+Generated on Sat Dec 22 2012 19:07:56 by &#160;<a href="http://www.doxygen.org/index.html">
+<img class="footer" src="doxygen.png" alt="doxygen"/>
+</a> 1.8.1.2
+</small></address>
+</body>
+</html>

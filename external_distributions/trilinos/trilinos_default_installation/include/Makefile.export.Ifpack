@@ -1,0 +1,103 @@
+##############################################################################
+#
+# Make variables for use by Trilinos/Ifpack clients. 
+#
+# Do not edit: This file was generated automatically by CMake.
+#
+##############################################################################
+
+
+## ---------------------------------------------------------------------------
+## Compilers used by Trilinos/Ifpack build
+## ---------------------------------------------------------------------------
+
+Ifpack_CXX_COMPILER=/usr/bin/g++
+
+Ifpack_C_COMPILER=/usr/bin/gcc
+
+Ifpack_FORTRAN_COMPILER=/usr/bin/gfortran
+
+
+## ---------------------------------------------------------------------------
+## Compiler flags used by Trilinos/Ifpack build
+## ---------------------------------------------------------------------------
+
+## Set compiler flags, including those determined by build type
+Ifpack_CXX_FLAGS=  -O6 -Wall 
+
+Ifpack_C_FLAGS= 
+
+Ifpack_FORTRAN_FLAGS= 
+
+## Extra link flags (e.g., specification of fortran libraries)
+Ifpack_EXTRA_LD_FLAGS=
+
+## This is the command-line entry used for setting rpaths. In a build
+## with static libraries it will be empty. 
+Ifpack_SHARED_LIB_RPATH_COMMAND=
+Ifpack_BUILD_SHARED_LIBS=OFF
+
+Ifpack_LINKER=/usr/bin/ld
+Ifpack_AR=/usr/bin/ar
+
+## ---------------------------------------------------------------------------
+## Set library specifications and paths 
+## ---------------------------------------------------------------------------
+
+## List of package include dirs
+Ifpack_INCLUDE_DIRS= -I/home/ray/learning/phd/wulfling/oomph2_hut11/external_distributions/trilinos/trilinos_default_installation/include
+
+## List of package library paths
+Ifpack_LIBRARY_DIRS= -L/home/ray/learning/phd/wulfling/oomph2_hut11/external_distributions/trilinos/trilinos_default_installation/lib
+
+## List of package libraries
+Ifpack_LIBRARIES= -lifpack -lamesos -laztecoo -lepetraext -ltriutils -lepetra -lteuchos
+
+## Specification of directories for TPL headers
+Ifpack_TPL_INCLUDE_DIRS=
+
+## Specification of directories for TPL libraries
+Ifpack_TPL_LIBRARY_DIRS=
+
+## List of required TPLs
+Ifpack_TPL_LIBRARIES= /home/ray/learning/phd/wulfling/oomph2_hut11/external_src/oomph_flapack/.libs/liboomph_flapack.a /home/ray/learning/phd/wulfling/oomph2_hut11/external_src/oomph_blas/.libs/liboomph_blas.a
+
+## ---------------------------------------------------------------------------
+## MPI specific variables
+##   These variables are provided to make it easier to get the mpi libraries
+##   and includes on systems that do not use the mpi wrappers for compiling
+## ---------------------------------------------------------------------------
+
+Ifpack_MPI_LIBRARIES=
+Ifpack_MPI_LIBRARY_DIRS=
+Ifpack_MPI_INCLUDE_DIRS=
+Ifpack_MPI_EXEC=
+Ifpack_MPI_EXEC_MAX_NUMPROCS=
+Ifpack_MPI_EXEC_NUMPROCS_FLAG=
+
+## ---------------------------------------------------------------------------
+## Set useful general variables 
+## ---------------------------------------------------------------------------
+
+## The packages enabled for this project
+Ifpack_PACKAGE_LIST= Ifpack Amesos AztecOO EpetraExt Triutils Epetra Teuchos
+
+## The TPLs enabled for this project
+Ifpack_TPL_LIST= LAPACK BLAS
+
+## ---------------------------------------------------------------------------
+## Deprecated variables
+##   These variables from the autotools version of Makefile.export.<package>
+##   have been deprecated. To help avoid confusion with projects that haven't
+##   migrated to the new version of the variable names when the don't compile.
+##   This will put an obvious statement in the link line that these Trilinos
+##   Makefile variables are no longer used. Without this there would be a link
+##   error with no obvious reason as to why other than the lack of Trilinos libs
+##   which would be confusing since the link line in the Makefile would have 
+##   stated to put them on the line.
+## ---------------------------------------------------------------------------
+
+IFPACK_LIBS="The Trilinos variable IFPACK_LIBS has been deprecated. Please see the documentation on the Makefile.export capability for instructions on how to transition to the new system."
+IFPACK_INCLUDES="The Trilinos variable IFPACK_INCLUDES has been deprecated. Please see the documentation on the Makefile.export capability for instructions on how to transition to the new system."
+
+

@@ -1,0 +1,194 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>oomph-lib</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link rel="stylesheet" type="text/css" href="doxygen.css">
+<link rel="stylesheet" type="text/css" href="../../oomph_header.css">
+<!-- The  following script does the hide/show trick-->
+<script language="JavaScript" type="text/javascript" 
+        src="../../navbar_toggle.js" >
+</script>
+<!-- The  following script
+ ensures that the required field on the download form get filled in-->
+<script language="JavaScript">
+<!--
+function formCheck(formobj){
+    // mandatory fields
+    var fieldRequired = Array("name", "affiliation", "email", "why");
+    // description to appear in the dialog box
+    var fieldDescription = Array("name", "affiliation", "email", 
+                                 "Why are you interested in oomph-lib?");
+    // dialog message
+    var alertMsg = "Please complete the following fields:\n";
+    var l_Msg = alertMsg.length;
+    for (var i = 0; i < fieldRequired.length; i++){
+        var obj = formobj.elements[fieldRequired[i]];
+        if (obj){
+            switch(obj.type){
+            case "select-one":
+                if (obj.selectedIndex == -1 || 
+                    obj.options[obj.selectedIndex].text == ""){
+                    alertMsg += " - " + fieldDescription[i] + "\n";
+                }
+                break;
+            case "select-multiple":
+                if (obj.selectedIndex == -1){
+                    alertMsg += " - " + fieldDescription[i] + "\n";
+                }
+                break;
+            case "text":
+            case "textarea":
+                if (obj.value == "" || obj.value == null){
+                    alertMsg += " - " + fieldDescription[i] + "\n";
+                }
+                break;
+            default:
+            }
+            if (obj.type == undefined){
+                var blnchecked = false;
+                for (var j = 0; j < obj.length; j++){
+                    if (obj[j].checked){
+                        blnchecked = true;
+                    }
+                }
+                if (!blnchecked){
+                    alertMsg += " - " + fieldDescription[i] + "\n";
+                }
+            }
+        }
+    }
+    if (alertMsg.length == l_Msg){
+        return true;
+    }else{
+        alert(alertMsg);
+        return false;
+    }
+}
+// -->
+</script>
+<body onLoad="visibilitytoggle()"> <!-- This is required for the "Click'n'view" fct to work! -->
+<div class="header">
+<p class="logo"><a href="../../../doc/html/index.html"><img src="../../../doc/figures/oomph.png" alt="oomph-lib logo: Link to oomph-lib homepage" border=0></a></p>
+<div class="head-section">
+<div id="hotspot" name="hotspot" class="hotspot" 
+     title="click to expand the navigation menu">Documentation,<br/>
+     example codes and tutorials</div> 
+<dl style="" id="toggle" name="toggle" class="toggle">  
+<dt><a href="../../../doc/index/html/index.html">Index</a></dt>
+<dt><a href="../../../doc/example_code_list/html/index.html">List of tutorials/demo codes</a></dt>
+<dt><a href="../../../doc/quick_guide/html/index.html">The (Not-so) Quick Guide</a></dt>
+<dt><a href="../../../doc/intro/html/index.html">FE theory and top-down discussion of the data structure</a></dt>
+      <dt><a href="../../../doc/the_data_structure/html/index.html">Comprehensive bottom-up discussion of the data
+      structure</a></dt>
+      <dt><a href="../../../doc/paraview/html/index.html"> Visualisation of the results </a></dt>
+      <dt><a href="../../../doc/coding_conventions/html/index.html">Coding conventions and C++ style</a></dt>
+      <dt><a href="../../../doc/creating_doc/html/index.html">Creating documentation</a></dt>
+      <dt><a href="../../../doc/optimisation/html/index.html">Optimisation</a>
+      </dt> 
+</dl>
+</div><!-- end section-->
+<div class="head-section">
+<div id="hotspot" name="hotspot" class="hotspot" 
+     title="click to expand the navigation menu">Parallel Processing</div> 
+<dl style="" id="toggle" name="toggle" class="toggle">  
+      <dt><a href="../../../doc/mpi/general_mpi/html/index.html"> Overview </a></dt>
+     <dt><a href="../../../doc/mpi/distributed_linear_algebra_infrastructure/html/index.html">
+     Distributed Linear Algebra </a></dt>
+     <dt><a href="../../../doc/mpi/distributed_block_preconditioners/html/index.html">
+     Distributed Block Preconditioners </a></dt>
+     <dt><a href="../../../doc/mpi/distributed_general_purpose_block_preconditioners/html/index.html">
+     Distributed General-Purpose Block Preconditioners </a></dt>
+</dl>
+</div>
+<div class="head-section">
+<div id="hotspot" name="hotspot" class="hotspot" 
+     title="click to expand the navigation menu"> Publications</div> 
+<dl style="" id="toggle" name="toggle" class="toggle">  
+    <dt><a href="../../../doc/publications/html/index.html">Publications</a>
+      <dd><a href="../../../doc/publications/html/index.html#talks">Talks</a></dd>
+      <dd><a href="../../../doc/publications/html/index.html#papers">Journal publications</a></dd>
+      <dd><a href="../../../doc/publications/html/index.html#theses">Theses</a></dd>
+    </dt>
+    <dt><a href="../../../doc/picture_show/index.html">Picture show </a></dt>
+</dl>
+</div><!-- end section-->
+<div class="head-section">
+<div id="hotspot" name="hotspot" class="hotspot" 
+     title="click to expand the navigation menu"> Download</div> 
+<dl style="" id="toggle" name="toggle" class="toggle">  
+    <dt><a href="../../../doc/copyright/html/index.html">Copyright</a></dt>
+    <dt><a href="../../../doc/the_distribution/html/index.html">Download/installation instructions</a></dt>
+    <dt><a href="../../../doc/download/html/index.html">Download page</a></dt>
+</dl>
+</div><!-- end section-->
+<div class="head-section">
+<div id="hotspot" name="hotspot" class="hotspot" 
+     title="click to expand the navigation menu">FAQ & Contact</div> 
+<dl style="" id="toggle" name="toggle" class="toggle">  
+    <dt><a href="../../../doc/FAQ/html/index.html">FAQ</a></dt>
+    <dt><a href="../../../doc/change_log/html/index.html">Change log</a></dt>
+    <dt><a href="../../../doc/bugs/html/index.html">Bugs and other known problems</a></dt>
+    <dt><a href="../../../doc/ToDo/html/index.html">Completeness of the library & our "To-Do List" </a></dt>
+    <dt><a href="../../../doc/contact/html/index.html">Contact the developers</a></dt>
+    <dt><a href="../../../doc/get_involved/html/index.html">Get involved </a></dt>
+</dl>
+</div><!-- end section-->
+<p class="clear">&nbsp;</p>
+</div><!-- end header -->
+<P>
+<HR>
+<TABLE BORDER=1, WIDTH=700px>
+<TR>
+<TD bgcolor="cornsilk">
+<CENTER><B>Beta release!</b></CENTER><br>
+Please note that the library has not been "officially" released.
+While we continue to work on the documentation, these web pages
+are likely to contain broken links and documents in draft form. 
+Please send an email to 
+<BR><BR>
+<CENTER>
+<TT>oomph-lib AT maths DOT man DOT ac DOT uk</TT>
+</CENTER>
+<BR> 
+if you wish to be informed of the library's "official" release.
+</TD>
+</TR>
+</TABLE>
+</CENTER>
+<HR>
+<script type="text/javascript">
+ function index_toggle(id,img) {
+  var e = document.getElementById(id);
+  var im = document.getElementById(img);
+  if (e.style.display == '')
+   {
+      e.style.display = 'none';
+      im.src="../expand.png";
+   }
+  else
+   {
+   e.style.display = '';
+   im.src = "../collapse.png";
+   }
+ }
+</script>
+</head>
+<!-- Generated by Doxygen 1.8.1.2 -->
+</div><!-- top -->
+<div class="header">
+  <div class="headertitle">
+<div class="title">contact.txt_doxygenified.h File Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p><a href="contact_8txt__doxygenified_8h_source.html">Go to the source code of this file.</a></p>
+</div><!-- contents -->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+Generated on Sat Dec 22 2012 19:07:53 by &#160;<a href="http://www.doxygen.org/index.html">
+<img class="footer" src="doxygen.png" alt="doxygen"/>
+</a> 1.8.1.2
+</small></address>
+</body>
+</html>

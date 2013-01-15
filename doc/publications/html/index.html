@@ -1,0 +1,291 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>oomph-lib</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link rel="stylesheet" type="text/css" href="doxygen.css">
+<link rel="stylesheet" type="text/css" href="../../oomph_header.css">
+<!-- The  following script does the hide/show trick-->
+<script language="JavaScript" type="text/javascript" 
+        src="../../navbar_toggle.js" >
+</script>
+<!-- The  following script
+ ensures that the required field on the download form get filled in-->
+<script language="JavaScript">
+<!--
+function formCheck(formobj){
+    // mandatory fields
+    var fieldRequired = Array("name", "affiliation", "email", "why");
+    // description to appear in the dialog box
+    var fieldDescription = Array("name", "affiliation", "email", 
+                                 "Why are you interested in oomph-lib?");
+    // dialog message
+    var alertMsg = "Please complete the following fields:\n";
+    var l_Msg = alertMsg.length;
+    for (var i = 0; i < fieldRequired.length; i++){
+        var obj = formobj.elements[fieldRequired[i]];
+        if (obj){
+            switch(obj.type){
+            case "select-one":
+                if (obj.selectedIndex == -1 || 
+                    obj.options[obj.selectedIndex].text == ""){
+                    alertMsg += " - " + fieldDescription[i] + "\n";
+                }
+                break;
+            case "select-multiple":
+                if (obj.selectedIndex == -1){
+                    alertMsg += " - " + fieldDescription[i] + "\n";
+                }
+                break;
+            case "text":
+            case "textarea":
+                if (obj.value == "" || obj.value == null){
+                    alertMsg += " - " + fieldDescription[i] + "\n";
+                }
+                break;
+            default:
+            }
+            if (obj.type == undefined){
+                var blnchecked = false;
+                for (var j = 0; j < obj.length; j++){
+                    if (obj[j].checked){
+                        blnchecked = true;
+                    }
+                }
+                if (!blnchecked){
+                    alertMsg += " - " + fieldDescription[i] + "\n";
+                }
+            }
+        }
+    }
+    if (alertMsg.length == l_Msg){
+        return true;
+    }else{
+        alert(alertMsg);
+        return false;
+    }
+}
+// -->
+</script>
+<body onLoad="visibilitytoggle()"> <!-- This is required for the "Click'n'view" fct to work! -->
+<div class="header">
+<p class="logo"><a href="../../../doc/html/index.html"><img src="../../../doc/figures/oomph.png" alt="oomph-lib logo: Link to oomph-lib homepage" border=0></a></p>
+<div class="head-section">
+<div id="hotspot" name="hotspot" class="hotspot" 
+     title="click to expand the navigation menu">Documentation,<br/>
+     example codes and tutorials</div> 
+<dl style="" id="toggle" name="toggle" class="toggle">  
+<dt><a href="../../../doc/index/html/index.html">Index</a></dt>
+<dt><a href="../../../doc/example_code_list/html/index.html">List of tutorials/demo codes</a></dt>
+<dt><a href="../../../doc/quick_guide/html/index.html">The (Not-so) Quick Guide</a></dt>
+<dt><a href="../../../doc/intro/html/index.html">FE theory and top-down discussion of the data structure</a></dt>
+      <dt><a href="../../../doc/the_data_structure/html/index.html">Comprehensive bottom-up discussion of the data
+      structure</a></dt>
+      <dt><a href="../../../doc/paraview/html/index.html"> Visualisation of the results </a></dt>
+      <dt><a href="../../../doc/coding_conventions/html/index.html">Coding conventions and C++ style</a></dt>
+      <dt><a href="../../../doc/creating_doc/html/index.html">Creating documentation</a></dt>
+      <dt><a href="../../../doc/optimisation/html/index.html">Optimisation</a>
+      </dt> 
+</dl>
+</div><!-- end section-->
+<div class="head-section">
+<div id="hotspot" name="hotspot" class="hotspot" 
+     title="click to expand the navigation menu">Parallel Processing</div> 
+<dl style="" id="toggle" name="toggle" class="toggle">  
+      <dt><a href="../../../doc/mpi/general_mpi/html/index.html"> Overview </a></dt>
+     <dt><a href="../../../doc/mpi/distributed_linear_algebra_infrastructure/html/index.html">
+     Distributed Linear Algebra </a></dt>
+     <dt><a href="../../../doc/mpi/distributed_block_preconditioners/html/index.html">
+     Distributed Block Preconditioners </a></dt>
+     <dt><a href="../../../doc/mpi/distributed_general_purpose_block_preconditioners/html/index.html">
+     Distributed General-Purpose Block Preconditioners </a></dt>
+</dl>
+</div>
+<div class="head-section">
+<div id="hotspot" name="hotspot" class="hotspot" 
+     title="click to expand the navigation menu"> Publications</div> 
+<dl style="" id="toggle" name="toggle" class="toggle">  
+    <dt><a href="../../../doc/publications/html/index.html">Publications</a>
+      <dd><a href="../../../doc/publications/html/index.html#talks">Talks</a></dd>
+      <dd><a href="../../../doc/publications/html/index.html#papers">Journal publications</a></dd>
+      <dd><a href="../../../doc/publications/html/index.html#theses">Theses</a></dd>
+    </dt>
+    <dt><a href="../../../doc/picture_show/index.html">Picture show </a></dt>
+</dl>
+</div><!-- end section-->
+<div class="head-section">
+<div id="hotspot" name="hotspot" class="hotspot" 
+     title="click to expand the navigation menu"> Download</div> 
+<dl style="" id="toggle" name="toggle" class="toggle">  
+    <dt><a href="../../../doc/copyright/html/index.html">Copyright</a></dt>
+    <dt><a href="../../../doc/the_distribution/html/index.html">Download/installation instructions</a></dt>
+    <dt><a href="../../../doc/download/html/index.html">Download page</a></dt>
+</dl>
+</div><!-- end section-->
+<div class="head-section">
+<div id="hotspot" name="hotspot" class="hotspot" 
+     title="click to expand the navigation menu">FAQ & Contact</div> 
+<dl style="" id="toggle" name="toggle" class="toggle">  
+    <dt><a href="../../../doc/FAQ/html/index.html">FAQ</a></dt>
+    <dt><a href="../../../doc/change_log/html/index.html">Change log</a></dt>
+    <dt><a href="../../../doc/bugs/html/index.html">Bugs and other known problems</a></dt>
+    <dt><a href="../../../doc/ToDo/html/index.html">Completeness of the library & our "To-Do List" </a></dt>
+    <dt><a href="../../../doc/contact/html/index.html">Contact the developers</a></dt>
+    <dt><a href="../../../doc/get_involved/html/index.html">Get involved </a></dt>
+</dl>
+</div><!-- end section-->
+<p class="clear">&nbsp;</p>
+</div><!-- end header -->
+<P>
+<HR>
+<TABLE BORDER=1, WIDTH=700px>
+<TR>
+<TD bgcolor="cornsilk">
+<CENTER><B>Beta release!</b></CENTER><br>
+Please note that the library has not been "officially" released.
+While we continue to work on the documentation, these web pages
+are likely to contain broken links and documents in draft form. 
+Please send an email to 
+<BR><BR>
+<CENTER>
+<TT>oomph-lib AT maths DOT man DOT ac DOT uk</TT>
+</CENTER>
+<BR> 
+if you wish to be informed of the library's "official" release.
+</TD>
+</TR>
+</TABLE>
+</CENTER>
+<HR>
+<script type="text/javascript">
+ function index_toggle(id,img) {
+  var e = document.getElementById(id);
+  var im = document.getElementById(img);
+  if (e.style.display == '')
+   {
+      e.style.display = 'none';
+      im.src="../expand.png";
+   }
+  else
+   {
+   e.style.display = '';
+   im.src = "../collapse.png";
+   }
+ }
+</script>
+</head>
+<!-- Generated by Doxygen 1.8.1.2 -->
+</div><!-- top -->
+<div class="header">
+  <div class="headertitle">
+<div class="title">oomph-lib related Publications </div>  </div>
+</div><!--header-->
+<div class="contents">
+<div class="textblock"><p>Here is a list of publications resulting from (or produced with) <code>oomph-lib</code>. If you have produced any work with <code>oomph-lib</code> and would like it to be listed here, send us a URL (or an electronic version of the publication) and we will install a link to it.</p>
+<ul>
+<li><a class="el" href="index.html#talks">Talks</a></li>
+<li><a class="el" href="index.html#papers">Papers</a></li>
+<li><a class="el" href="index.html#theses">Theses</a></li>
+</ul>
+<hr/>
+ <hr/>
+<h1><a class="anchor" id="talks"></a>
+Talks</h1>
+<ul>
+<li>M. Heil &amp; A. L. Hazel (2008) "Everything you always wanted to 
+  know about \c oomph-lib but were afraid to ask". Seminar given at various UK universities. <a href="http://www.maths.man.ac.uk/~mheil/oomph_lib_additional_material/oomph_talk_beamer/oomph-lib-beamer.pdf">(pdf).</a></li>
+</ul>
+<ul>
+<li>M. Heil, A.L. Hazel, R. Muddle &amp; J. Boyle (2007) "Large-Displacement 
+  FSI problems: Segregated vs. monolithic solvers in \c oomph-lib". Oberwolfach Mini-Workshop: Theory and Numerics of Fluid-Solid Interaction. <a href="http://www.maths.man.ac.uk/~mheil/oomph_lib_additional_material/OberwolfachFSI2007/Oberwolfach.pdf">(pdf).</a> [signficantly extended version of Ibiza talk including a much larger number of test cases.]</li>
+</ul>
+<ul>
+<li>M. Heil, A.L. Hazel, R. Muddle &amp; J. Boyle (2007) "Large-Displacement 
+  FSI problems: Segregated vs. monolithic solvers in \c oomph-lib". Coupled Problems 2007, Ibiza, Spain. <a href="http://www.maths.man.ac.uk/~mheil/oomph_lib_additional_material/Ibiza2007/Ibiza.pdf">(pdf).</a></li>
+</ul>
+<ul>
+<li>M. Heil &amp; A. L. Hazel (2006) "An object-oriented approach to the evaluation of the `shape derivatives' in monolithic fluid-structure interaction solvers." 7th World Congress on Computational Mechanics,
+  LA, July 2006. &lt;A HREF="<a href="http://www.maths.man.ac.uk/~mheil/oomph_lib_additional_material/LA_talk_2006/LA_talk.pdf">http://www.maths.man.ac.uk/~mheil/oomph_lib_additional_material/LA_talk_2006/LA_talk.pdf</a>"&gt;(pdf).&lt;/A&gt;
+  Here's the associated animation &lt;A HREF="<a href="http://www.maths.man.ac.uk/~mheil/oomph_lib_additional_material/LA_talk_2006/fsi.avi">http://www.maths.man.ac.uk/~mheil/oomph_lib_additional_material/LA_talk_2006/fsi.avi</a>"&gt;(avi).</li>
+</ul>
+<ul>
+<li>Iason Papaioannou &amp; Orkun Oezkan Doenmez, supervised by <a href="http://www.inf.bauwesen.tu-muenchen.de/~kollmannsberger/">Stefan Kollmannsberger</a> (2006) "Learning object-oriented programming in
+  the context of using a multi-physics finite element library." Lehrstuhl fur Bauinformation, TU Munich <a href="http://www.maths.man.ac.uk/~mheil/oomph_lib_additional_material/Stefan_Kollmannsberger_2006/Kollmannsberger_Orkun_Iason.pdf">(pdf)</a> <a href="http://www.maths.man.ac.uk/~mheil/oomph_lib_additional_material/Stefan_Kollmannsberger_2006/Kollmannsberger_Orkun_Iason.ppt">(ppt).</a> Here are the associated animations (avi files) of the <a href="http://www.maths.man.ac.uk/~mheil/oomph_lib_additional_material/Stefan_Kollmannsberger_2006/velocity.avi">velocity </a> and <a href="http://www.maths.man.ac.uk/~mheil/oomph_lib_additional_material/Stefan_Kollmannsberger_2006/pressure.avi">pressure fields</a> for the unsteady flow past a circular cylinder.</li>
+</ul>
+<ul>
+<li>M. Heil &amp; A. L. Hazel (2005) "<code>oomph-lib</code> &ndash; An <em>O</em>bject-<em>O</em>riented <em>M</em>ulti-<em>Ph</em>ysics Finite-Element <em>Lib</em>rary." Workshop on Fluid-Structure
+  Interaction. Hohenwart, Germany. &lt;A HREF="<a href="http://www.maths.man.ac.uk/~mheil/oomph_lib_additional_material/Hohenwart_talk_2005/Hohenwart_2005.pdf">http://www.maths.man.ac.uk/~mheil/oomph_lib_additional_material/Hohenwart_talk_2005/Hohenwart_2005.pdf</a>"&gt;(pdf).</li>
+</ul>
+<ul>
+<li>M. Heil, S.L. Waters &amp; A. L. Hazel (2005) Transverse flows in rapidly oscillating cylindrical vessels. ASME Summer Bioengineering Conference, Vail, Colorado, June 2005. <a href="http://www.maths.man.ac.uk/~mheil/oomph_lib_additional_material/ASME_talk_vail_2005/ASME_talk_2005.pdf">(pdf).</a></li>
+</ul>
+<ul>
+<li></li>
+</ul>
+<hr/>
+ <hr/>
+<h1><a class="anchor" id="papers"></a>
+Papers</h1>
+<ul>
+<li>de L&oacute;zar, A., Juel, A. &amp; Hazel, A. L. (2008) The steady propagation of an air finger into a rectangular tube. Journal of Fluid Mechanics <b> 614</b>, pp 173&ndash;195. <a href="http://journals.cambridge.org/action/displayAbstract?fromPage=online&amp;aid=2459772&amp;fulltextType=RA&amp;fileId=S0022112008003455">Link to electronic journal</a></li>
+</ul>
+<ul>
+<li>Hazel, A.L. &amp; Heil, M. (2008) The influence of gravity on the steady propagation of a semi-infinite bubble into a flexible channel. Physics of Fluids <b>20</b>, 092109. <a href="http://www.maths.man.ac.uk/~mheil/MATTHIAS/ABSTRACTS/HazelHeilPoF2007.html">(abstract)</a> <a href="http://www.maths.man.ac.uk/~mheil/MATTHIAS/PDF/HazelHeilPoF2008.pdf">(pdf preprint)</a></li>
+</ul>
+<ul>
+<li>Heil, M., Hazel, A.L. &amp; Boyle, J. (2008): Solvers for large-displacement fluid-structure interaction problems: Segregated vs. monolithic approaches. Computational Mechanics. <a href="http://www.springerlink.com/content/m3r6318701g338g4/">(journal link)</a></li>
+</ul>
+<ul>
+<li>Heil, M. &amp; Waters, S.L. (2008) How rapidly oscillating collapsible tubes extract energy from a mean flow. Journal of Fluid Mechanics <b>601</b>, 199-227. <a href="http://journals.cambridge.org/action/displayFulltext?type=1&amp;fid=1846472&amp;jid=FLM&amp;volumeId=601&amp;issueId=-1&amp;aid=1846464">(journal link).</a></li>
+</ul>
+<ul>
+<li>Hewitt, R. E. &amp; Hazel, A. L. (2006) Midplane-symmetry breaking in the flow between two counter-rotating disks. <em>Journal of Engineering Mathematics</em> <b>DOI: 10.1007/s10665-006-9098-2</b>. <a href="http://www.springerlink.com/content/8930128433612244/">(journal link)</a></li>
+</ul>
+<ul>
+<li>Heil, M. &amp; Hazel, A. L. (2006) <code>oomph-lib</code> &ndash; An <em>O</em>bject-<em>O</em>riented <em>M</em>ulti-<em>Ph</em>ysics Finite-Element <em>Lib</em>rary. In: <em>Fluid-Structure Interaction</em>, Editors: M. Schafer und H.-J. Bungartz. Springer (Lecture Notes on Computational Science and Engineering), pp 19&ndash;49. <a href="http://www.maths.man.ac.uk/~mheil/MATTHIAS/ABSTRACTS/HeilHazelOomph2006.html">(abstract)</a> <a href="http://www.maths.man.ac.uk/~mheil/MATTHIAS/PDF/oomph_for_www.pdf">(pdf preprint)</a></li>
+</ul>
+<ul>
+<li>Heil, M. &amp; Waters, S.L. (2006) Transverse flows in rapidly oscillating, elastic cylindrical shells. <em>Journal of Fluid Mechanics</em> <b>547</b>, 185-214. <a href="http://www.maths.man.ac.uk/~mheil/MATTHIAS/ABSTRACTS/HeilWaters2004.html">(abstract)</a> <a href="http://www.maths.man.ac.uk/~mheil/MATTHIAS/PDF/OscRing_final_version_for_WWW.pdf">(pdf preprint)</a> <br/>
+<br/>
+</li>
+</ul>
+<ul>
+<li>Jensen, O.E. &amp; Heil, M. (2003) High-frequency self-excited oscillations in a collapsible-channel flow. <em>Journal of Fluid Mechanics</em> <b>481</b> 235-268. <a href="http://www.maths.man.ac.uk/~mheil/MATTHIAS/PDF/JensenHeil2003.pdf">(pdf preprint)</a> <a href="http://www.maths.man.ac.uk/~mheil/MATTHIAS/ABSTRACTS/JensenHeil02.html">(abstract)</a> <br/>
+<br/>
+ The computations shown in this paper were performed in the days before <code>oomph-lib</code>, but the problem considered in this study now features in oomph-lib demo problems: <br/>
+<br/>
+<ul>
+<li><a href="../../navier_stokes/collapsible_channel/html/index.html">Flow in a 2D channel with an oscillating wall.</a> <br/>
+<br/>
+</li>
+<li><a href="../../interaction/fsi_collapsible_channel/html/index.html">Flow in a 2D collapsible channel.</a></li>
+</ul>
+</li>
+</ul>
+<hr/>
+ <hr/>
+<h1><a class="anchor" id="theses"></a>
+Theses</h1>
+<ul>
+<li>Nick Chapman (2006) "Unstructured triangular/tetrahedral mesh
+  generation". MSc in Theoretical and Applied Fluid Dynamics, University of Manchester.</li>
+<li>Chris Gold (2006) "Explicit Timestepping in oomph-lib". MSc in Theoretical and Applied Fluid Dynamics, University of Manchester.</li>
+<li>Richard Muddle (2006) "An object-oriented implementation of block preconditioning for the C<sup>1</sup> finite element discretisation of the biharmonic equation". MSc in Computational Science and Engineering, University of Manchester.</li>
+<li>Daniel Meyer (2005) "Oscillatory two-layer flow in a rotating
+  cylinder". MSc in Theoretical and Applied Fluid Dynamics, University of Manchester.</li>
+<li>Gemma Barson (2004) "Object-oriented mesh generation". MSc in Numerical Analysis and Scientific Computing, University of Manchester.</li>
+</ul>
+<hr/>
+ <hr/>
+ <h1><a class="anchor" id="pdf"></a>
+PDF file</h1>
+<p>A <a href="../latex/refman.pdf">pdf version</a> of this document is available. </p>
+</div></div><!-- contents -->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+Generated on Sat Dec 22 2012 19:07:54 by &#160;<a href="http://www.doxygen.org/index.html">
+<img class="footer" src="doxygen.png" alt="doxygen"/>
+</a> 1.8.1.2
+</small></address>
+</body>
+</html>

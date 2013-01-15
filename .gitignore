@@ -3,14 +3,14 @@
 ######################################################################
 
 aclocal.m4
-AUTHORS
+#AUTHORS
 autogen_fresh.dat
 #autogen_fresh.sh*###############
-autogen.sh
+#autogen.sh
 autom4te.cache/
-bin/
+#bin/
 build/
-ChangeLog
+#ChangeLog
 #config/##################################
 config.guess
 config.h
@@ -20,8 +20,8 @@ config.status*
 config.sub
 configure
 configure.ac
-COPYING
-demo_drivers/
+#COPYING
+#demo_drivers/
 depcomp
 doc/
 
@@ -33,7 +33,7 @@ external_distributions/trilinos/*
 !external_distributions/trilinos/trilinos-11.0.3-Source.tar.gz
 
 external_src/
-INSTALL
+#INSTALL
 install-sh
 libtool
 ltmain.sh
@@ -41,17 +41,17 @@ Makefile
 #Makefile.am###########################
 Makefile.in
 missing
-NEWS
+#NEWS
 old_symbolic_links.txt
 oomph-lib-config.h
-README
-self_test/
+#README
+#self_test/
 #src/###############################################
 stamp-h1
 .svn/
 #user_drivers######################################
 #user_src/#######################################
-validate.sh
+#validate.sh
 validation.log
 
 *.deps/
