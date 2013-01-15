@@ -2135,7 +2135,14 @@ this->block_setup(block_setup_bcpl);
 
     Navier_stokes_block_preconditioner_pt
       ->setup(problem_pt(),matrix_pt());
-
+    
+    for (unsigned i = 0; i < N_fluid_doftypes; i++)
+    {
+      for (unsigned j = 0; j < N_fluid_doftypes; j++) 
+      {
+        delete f_aug_ptrs(i,j);
+      }
+    }
     //delete prec_blocks[0];
     //delete prec_blocks[1];
     //delete prec_blocks[2];

@@ -186,7 +186,6 @@ namespace oomph
      }
      
      // Check that this is the most fine grain .
-     std::cout << "ndof_types: " << this->ndof_types() << std::endl;
      if(prec_blocks_nrow != this->ndof_types())
      {
        std::ostringstream error_message;
@@ -288,6 +287,60 @@ namespace oomph
                             "BlockPreconditioner::set_prec_blocks",
 					                  OOMPH_EXCEPTION_LOCATION);
      }
+
+     // Checks for Block_to_block_map
+     // No more than ndof types described.
+     //
+     std::cout << "mapsize: " << Block_to_block_map.size() << std::endl; 
+     
+     // No repeat of blocks.
+     std::set<unsigned> block_map_set;
+     std::cout << "size: " << blockmapping.size() << std::endl; 
+     std::cout << "1st size: " << blockmapping[0].size() << std::endl; 
+     std::cout << "2nd size: " << blockmapping[1].size() << std::endl; 
+     
+     for (unsigned i = 0; i < blockmapping.size(); i++) 
+     {
+       for (unsigned j = 0; j < blockmapping[i].size(); j++)
+       {
+         pause("Got in j loop"); 
+         
+         std::set<unsigned>::iterator block_map_it;
+         std::pair<std::set<unsigned>::iterator,bool> block_map_ret;
+         std::cout << "adding... " << Block_to_block_map[i][j] << std::endl; 
+         pause("done"); 
+           
+         block_map_ret = block_map_set.insert(Block_to_block_map[i][j]);
+         if(!block_map_ret.second)
+         {
+   	       std::ostringstream error_message;
+           error_message << "Error: the block number "
+                         << Block_to_block_map[i][j]
+                         << " is already inserted in Block_to_block_map." 
+                         << std::endl;
+	         throw OomphLibError(error_message.str(),
+                            "BlockPreconditioner::set_prec_blocks",
+					                  OOMPH_EXCEPTION_LOCATION);
+         }
+       }
+     }
+     
+      std::cout << "block_map_set size: " << block_map_set.size() << std::endl; 
+      
+     pause("done test"); 
+     
+     if(prec_blocks_nrow != block_map_set.size())
+     {
+       std::ostringstream error_message;
+       error_message << "Error: all blocks must be assigned. \n"
+                     << "Only " << block_map_set.size() 
+                     << " blocks have been assigned." 
+                     << std::endl;
+	     throw OomphLibError(error_message.str(),
+                           "BlockPreconditioner::set_prec_blocks",
+			                     OOMPH_EXCEPTION_LOCATION);
+     }
+
 #endif
 
      Prec_blocks = prec_block_pts;
