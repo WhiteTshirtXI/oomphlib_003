@@ -227,6 +227,7 @@ src/unsteady_heat/unsteady_heat.h
 src/womersley/womersley.h
 src/young_laplace/young_laplace.h
 user_src/jack_cool/jack_cool.h
+demo_drivers/meshing/mesh_from_xfig_triangle/fig2poly
 demo_drivers/FAQ/broken_this_demo
 demo_drivers/FAQ/customising_output
 demo_drivers/advection_diffusion/two_d_adv_diff_SUPG/two_d_adv_diff_SUPG
