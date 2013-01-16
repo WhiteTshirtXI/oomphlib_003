@@ -192,8 +192,8 @@ namespace oomph
  {
 #ifdef PARANOID
   // the number of blocks
-  unsigned n_blocks = this->nblock_types();
-
+  unsigned n_blocks = Block_to_block_map.size();
+  
   // paranoid check that block i is in this block preconditioner
   if (block_i >= n_blocks || block_j >= n_blocks)
    {
@@ -206,7 +206,7 @@ namespace oomph
                         OOMPH_EXCEPTION_LOCATION);
    }
 #endif
-
+  
   // Create the dense matrix required for the merge.
   // How many block rows and columns?
   unsigned nblock_in_row = Block_to_block_map[block_i].size();

@@ -290,14 +290,7 @@ namespace oomph
 
      // Checks for Block_to_block_map
      // No more than ndof types described.
-     //
-     std::cout << "mapsize: " << Block_to_block_map.size() << std::endl; 
-     
-     // No repeat of blocks.
      std::set<unsigned> block_map_set;
-     std::cout << "size: " << blockmapping.size() << std::endl; 
-     std::cout << "1st size: " << blockmapping[0].size() << std::endl; 
-     std::cout << "2nd size: " << blockmapping[1].size() << std::endl; 
      
      for (unsigned i = 0; i < blockmapping.size(); i++) 
      {
@@ -305,9 +298,8 @@ namespace oomph
        {
          std::set<unsigned>::iterator block_map_it;
          std::pair<std::set<unsigned>::iterator,bool> block_map_ret;
-         std::cout << "adding... " << blockmapping[i][j] << std::endl; 
-         
          block_map_ret = block_map_set.insert(blockmapping[i][j]);
+         
          if(!block_map_ret.second)
          {
    	       std::ostringstream error_message;
@@ -4731,14 +4723,25 @@ namespace oomph
     
     new_row_start[total_nrow_global] = total_nnz;
     
-    
-    if(block_pt == 0)
+    // We always create a new distribution.
+    if(block_pt != 0)
     {
-      block_pt = new CRDoubleMatrix(new_distribution_pt );
+#ifdef PARANOID
+      std::ostringstream error_message;
+      error_message << "Please ensure that the object has been delete" 
+                    << "and the pointer is NULL." << std::endl;
+    throw OomphLibError(error_message.str(),
+                        "BlockPreconditioner::cat()",
+                        OOMPH_EXCEPTION_LOCATION);
+#endif
     }
+      
+    block_pt = new CRDoubleMatrix(new_distribution_pt);
+      
     
     block_pt->build(total_ncol_global, new_values, 
                     new_column_indices, new_row_start);
+    
     /*
     unsigned block_nrow = total_nrow_global;
     unsigned block_ncol = total_nrow_global;
