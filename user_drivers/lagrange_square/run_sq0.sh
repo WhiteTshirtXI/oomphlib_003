@@ -1,8 +1,10 @@
 #!/bin/bash
 
-OOMPHPATH="/home/ray/learning/phd/wulfling/oomphlib_current/"
-cd $OOMPHPATH/src/ && make && make install && \
-cd $OOMPHPATH/user_drivers/lagrange_square/ && \
+
+#OOMPHPATH="learning/phd/wulfling/oomphlib_current"
+OOMPHPATH="oomphlib/oomphlib_current"
+cd ~/$OOMPHPATH/src/ && make && make install && \
+cd ~/$OOMPHPATH/user_drivers/lagrange_square/ && \
 make square0 && \
 ./square0 --w_solver 0 --ns_solver 1 --visc 0 \
           --ang 30 --rey 100 --noel 4
