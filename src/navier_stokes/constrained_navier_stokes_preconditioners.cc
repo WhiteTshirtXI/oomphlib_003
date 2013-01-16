@@ -450,8 +450,8 @@ namespace oomph
   double t_QBt_matrix_start = TimingHelpers::timer();
   CRDoubleMatrix* qbt_pt = new CRDoubleMatrix;
   inv_v_mass_pt->multiply(*bt_pt, *qbt_pt);
-  //delete bt_pt;
-  
+  delete bt_pt;
+  bt_pt = 0;
   //Prec_blocks[2]->sparse_indexed_output("Bt_after_delete");
     
   // Store product in bt_pt 
@@ -464,7 +464,8 @@ namespace oomph
                << t_QBt_time << std::endl;
    }
   delete inv_v_mass_pt;
-  
+
+  inv_v_mass_pt = 0;
   
   // Multiply B from left by divergence matrix B and store result in 
   // pressure Poisson matrix.
@@ -478,8 +479,8 @@ namespace oomph
                << t_p_time << std::endl;
    }
   // Kill divergence matrix because we don't need it any more
-  //delete b_pt;
-  
+  delete b_pt;
+  b_pt = 0;
 
   double t_QBt_MV_start = TimingHelpers::timer();
   QBt_mat_vec_pt = new MatrixVectorProduct;
@@ -493,8 +494,8 @@ namespace oomph
    }
   // Kill gradient matrix B^T (it's been overwritten anyway and
   // needs to be recomputed afresh below)
-  //delete bt_pt;
-  
+  delete bt_pt;
+  bt_pt = 0;
 
   // Do we need the Fp stuff?
   /* 
@@ -546,6 +547,7 @@ namespace oomph
   CRDoubleMatrix* f_pt = 0; //Prec_blocks[0];
   double t_get_F_start = TimingHelpers::timer();
   this->get_block(0,0,f_pt);
+  
   double t_get_F_finish = TimingHelpers::timer();
   if(Doc_time)
    {
@@ -558,6 +560,7 @@ namespace oomph
   double t_F_MV_start = TimingHelpers::timer();
   F_mat_vec_pt = new MatrixVectorProduct;
   F_mat_vec_pt->setup(f_pt);
+  
   double t_F_MV_finish = TimingHelpers::timer();
   if(Doc_time)
    {
@@ -570,6 +573,7 @@ namespace oomph
   if (F_preconditioner_is_block_preconditioner)
    {
     delete f_pt;
+    f_pt = 0;
    }
   
   // Rebuild Bt (remember that we temporarily overwrote
@@ -578,8 +582,11 @@ namespace oomph
   //bt_pt = Prec_blocks[2];
   //bt_pt->sparse_indexed_output("Bt_from_constns");
   //pause("Before get bt block"); 
+  bt_pt = 0;
   
   this->get_block(0,1,bt_pt);
+  //pause("Got bt_pt again"); 
+  
   t_get_Bt_finish = TimingHelpers::timer();
   
   if(Doc_time)
@@ -607,11 +614,11 @@ namespace oomph
                << t_Bt_MV_time << std::endl;
    }
   delete bt_pt;
-
+  bt_pt = 0;
   // if the P preconditioner has not been setup
   if (P_preconditioner_pt == 0)
    {
-  //  pause("Setting up SuperLu for P"); 
+    pause("Setting up SuperLu for P"); 
     P_preconditioner_pt = new SuperLUPreconditioner;
     Using_default_p_preconditioner = true;
    }
@@ -647,7 +654,7 @@ namespace oomph
   // if the F preconditioner has not been setup
   if (F_preconditioner_pt == 0)
    {
-//    pause("Creating SuperLU for F_prec"); 
+    pause("Creating SuperLU for F_prec"); 
     
     F_preconditioner_pt = new SuperLUPreconditioner;
     Using_default_f_preconditioner = true;
@@ -675,7 +682,8 @@ namespace oomph
   else
    {
     F_preconditioner_pt->setup(problem_pt(),f_pt);
-    //delete f_pt;
+    delete f_pt;
+    f_pt = 0;
    }
   double t_f_prec_finish = TimingHelpers::timer();
   if(Doc_time)
