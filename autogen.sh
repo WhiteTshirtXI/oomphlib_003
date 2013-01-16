@@ -172,6 +172,7 @@ fi
 #-----------------------------------
 
 # Backup old file (use -f so it doesn't give an error if the file doesn't exist)
+touch ${MY_HOME_WD}/config/configure.ac_scripts/user_drivers.dir_list
 mv -f ${MY_HOME_WD}/config/configure.ac_scripts/user_drivers.dir_list ${MY_HOME_WD}/config/configure.ac_scripts/user_drivers.dir_list.backup
 
 # Get a list of locations of files named Makefile.am, modify a little and write to user_drivers.dir_list.
