@@ -1,12 +1,27 @@
 #!/bin/bash
 
-OOMPHPATH="/home/ray/learning/phd/wulfling/oomphlib_current/"
-cd $OOMPHPATH/src/ && make && make install && \
-cd $OOMPHPATH/user_drivers/lagrange_square/ && \
-make square0 && \
-./square0 --w_solver 0 --ns_solver 1 --f_solver 1 --p_solver 1 \
-          --visc 0 --ang 30 --rey 100 --noel 4
+RAYTARGET=$HOSTNAME # wulfling.maths.manchester.ac.uk, rice, cake...
 
+
+if [ "$RAYTARGET" == rice]; then
+OOMPHPATH="/home/ray/learning/phd/wulfling/oomphlib_current/"
+  cd $OOMPHPATH/src/ && make && make install && \
+  cd $OOMPHPATH/user_drivers/lagrange_square/ && \
+  make square0 && \
+  ./square0 --w_solver 0 --ns_solver 1 --f_solver 1 --p_solver 1 \
+            --visc 0 --ang 30 --rey 100 --noel 4
+elif [ "$RAYTARGET" == "wulfling.maths.manchester.ac.uk" ]; then
+  OOMPHPATH="/home/mly/oomphlib_current"
+  cd $OOMPHPATH/src/ && make && make install && \
+  cd $OOMPHPATH/user_drivers/lagrange_square/ && \
+  make square0 && \
+  ./square0 --w_solver 0 --ns_solver 1 --f_solver 1 --p_solver 1 \
+            --visc 0 --ang 30 --rey 100 --noel 4
+else
+  echo "No such target for $RAYTARGET"
+  read -p "Press [Enter] key to quit."
+  exit
+fi
 #./square0 --w_solver 0 --ns_solver 0 --visc 0 \
 #          --ang 30 --rey 100 --noel 4
 
