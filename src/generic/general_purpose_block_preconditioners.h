@@ -291,7 +291,15 @@ namespace oomph
   GeneralPurposeBlockPreconditioner<MATRIX>::block_setup();
 
   // number of types of degree of freedom
-  unsigned nblock_types = this->nblock_types();
+  unsigned nblock_types = 0;
+  if(this->Prec_blocks_has_been_set)
+  {
+    nblock_types = this->Block_to_block_map.size();
+  }
+  else
+  {
+    nblock_types = this->nblock_types();
+  }
 
   // Resize the storage for the diagonal blocks
   Diagonal_block_preconditioner_pt.resize(nblock_types);
