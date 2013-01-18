@@ -101,9 +101,6 @@ struct SquareLagrangeVariables{
 };
 
 
-
-
-
 #ifdef OOMPH_HAS_HYPRE
 //=============================================================================
 /// helper method for the block diagonal F block preconditioner to allow 
@@ -124,46 +121,7 @@ namespace Hypre_Subsidiary_Preconditioner_Helper
     return new HyprePreconditioner;
   }                
 } 
-#endif            
-
-namespace oomph
-{
-//========================================================================
-/// \short A Sloping Mesh  class.
-///
-/// derived from RectangularQuadMesh:
-/// the same mesh rotated with an angle phi
-//========================================================================
- template<class ELEMENT>
- class SlopingQuadMesh : public RectangularQuadMesh<ELEMENT>
- {
- public:
-
-  /// Constructor.
-  SlopingQuadMesh(const unsigned& nx, const unsigned& ny,
-                  const double& lx,  const double& ly, const double& phi ) :
-   RectangularQuadMesh<ELEMENT>(nx,ny,lx,ly)
-   {
-    // Find out how many nodes there are
-    unsigned n_node=this->nnode();
-
-    // Loop over all nodes
-    for (unsigned n=0;n<n_node;n++)
-     {
-      // Pointer to node:
-      Node* nod_pt=this->node_pt(n);
-
-      // Get the x/y coordinates
-      double x=nod_pt->x(0);
-      double y=nod_pt->x(1);
-
-      // Set new nodal coordinates
-      nod_pt->x(0)=x*cos(phi)-y*sin(phi);
-      nod_pt->x(1)=x*sin(phi)+y*cos(phi);
-     }
-   }
- };
-} // end of namespace oomph
+#endif
 
 
 //===start_of_problem_class=============================================
@@ -237,8 +195,6 @@ public:
 
 private:
 
- /// Pointer to the "bulk" mesh
- SlopingQuadMesh<ELEMENT>* Bulk_mesh_pt;
 
  /// Pointer to the "surface" mesh
  Mesh* Surface_mesh_T_pt;
@@ -281,31 +237,25 @@ TiltedCavityProblem<ELEMENT>::TiltedCavityProblem
  // Domain length in y-direction
  double ly=1.0;
 
- Bulk_mesh_pt =
-  new SlopingQuadMesh<ELEMENT>(nx,ny,lx,ly,myvar.Ang);
+ mesh_pt() = new SimpleRectangularQuadMesh<QTaylorHoodElement<2> >
+        (nx,ny,lx,ly);
 
  // Create a "surface mesh" that will contain only
  // ImposeParallelOutflowElements in boundary 1
  // The constructor just creates the mesh without
  // giving it any elements, nodes, etc.
- Surface_mesh_P_pt = new Mesh;
  //Surface_mesh_T_pt = new Mesh;
 
  // Create ImposeParallelOutflowElement from all elements that are
  // adjacent to the Neumann boundary.
- create_parall_outflow_lagrange_elements(po_b,
-                                         Bulk_mesh_pt,Surface_mesh_P_pt);
  //create_impenetrable_lagrange_elements(po_b,
  //                                        Bulk_mesh_pt,Surface_mesh_P_pt);
 
  // Add the two sub meshes to the problem
- add_sub_mesh(Bulk_mesh_pt);
- add_sub_mesh(Surface_mesh_P_pt);
  //add_sub_mesh(Surface_mesh_T_pt);
  // Combine all submeshes into a single Mesh
- build_global_mesh();
 
- unsigned num_bound=Bulk_mesh_pt->nboundary();
+ unsigned num_bound=mesh_pt()->nboundary();
 
  // Set the boundary conditions for this problem: All nodes are
  // free by default -- just pin the ones that have Dirichlet conditions
@@ -315,11 +265,11 @@ TiltedCavityProblem<ELEMENT>::TiltedCavityProblem
    //if((ibound != po_b)&&(ibound != tf_b))
    if(ibound != po_b)
    {
-     unsigned num_nod=Bulk_mesh_pt->nboundary_node(ibound);
+     unsigned num_nod=mesh_pt()->nboundary_node(ibound);
      for (unsigned inod=0;inod<num_nod;inod++)
      {
        // Get node
-       Node* nod_pt=Bulk_mesh_pt->boundary_node_pt(ibound,inod);
+       Node* nod_pt=mesh_pt()->boundary_node_pt(ibound,inod);
 
        nod_pt->pin(0);
        nod_pt->pin(1);
@@ -344,19 +294,6 @@ TiltedCavityProblem<ELEMENT>::TiltedCavityProblem
    u=(ytiltedback-0.0)*(1-ytiltedback);
 
 
-   /*
-   if(ytiltedback > 0.5)
-    {
-     // Impose inflow velocity
-     u=(ytiltedback-0.5)*(1-ytiltedback);
-    }
-   else
-    {
-     // Impose outflow velocity
-     u=(ytiltedback-0.5)*ytiltedback;
-    }
-    // */
-
    // Now apply the rotation to u, using rotation matrices.
    // with x = u and y = 0, i.e. R*[u;0] since we have the
    // velocity in the x direction only. There is no velocity
@@ -368,14 +305,22 @@ TiltedCavityProblem<ELEMENT>::TiltedCavityProblem
    nod_pt->set_value(1,uy);
  }
 
+ num_nod= mesh_pt()->nboundary_node(po_b);
+ for (unsigned inod=0;inod<num_nod;inod++)
+  {
+   Node* nod_pt=mesh_pt()->boundary_node_pt(po_b,inod);
+   if(!(nod_pt->is_on_boundary(0)) && !(nod_pt->is_on_boundary(2)) )
+     {nod_pt->unpin(0);}
+  }
+
  //Complete the problem setup to make the elements fully functional
 
  //Loop over the elements
- unsigned n_el = Bulk_mesh_pt->nelement();
+ unsigned n_el = mesh_pt()->nelement();
  for(unsigned e=0;e<n_el;e++)
   {
    //Cast to a fluid element
-   ELEMENT *el_pt = dynamic_cast<ELEMENT*>(Bulk_mesh_pt->element_pt(e));
+   ELEMENT *el_pt = dynamic_cast<ELEMENT*>(mesh_pt()->element_pt(e));
 
    //Set the Reynolds number, etc
    el_pt->re_pt() = &myvar.Rey;
@@ -386,50 +331,20 @@ TiltedCavityProblem<ELEMENT>::TiltedCavityProblem
  std::cout << "\n equation numbers : "<< assign_eqn_numbers() << std::endl;
 
  ////// Build the preconditioner
- LagrangeEnforcedflowPreconditioner* prec_pt
-   = new LagrangeEnforcedflowPreconditioner;
- 
+ NavierStokesSchurComplementPreconditioner* prec_pt = new NavierStokesSchurComplementPreconditioner;
+ prec_pt->set_navier_stokes_mesh(mesh_pt());
  Prec_pt = prec_pt;
-
- Vector<Mesh*> meshes_pt;
- meshes_pt.resize(2);
- meshes_pt[0] = Bulk_mesh_pt;
- meshes_pt[1] = Surface_mesh_P_pt;
- //meshes_pt[2] = Surface_mesh_T_pt;
- prec_pt->set_meshes(meshes_pt);
  
-
- if(!myvar.Use_axnorm)
- {
-   prec_pt->scaling_sigma() = myvar.Scaling_sigma;
- }
 
  //////////////////////////////////////////////////////////////////////////////
  // Setting up the solver an preconditioners.
 
- // W solver. Use SuperLU
- if(myvar.W_solver == 0)
- {
- }
- else
- {
-   std::cout << "Other W solvers not complemented yet. Using default SuperLU"
-             << std::endl;
- }
-
- //////////////////////////////////////////////////////////////////////////////
- // NS preconditioner
- ConstrainedNavierStokesSchurComplementPreconditioner* ns_preconditioner_pt =
- new ConstrainedNavierStokesSchurComplementPreconditioner;
 
  // The preconditioner for the fluid block:
  if(myvar.NS_solver == 0) // Exact solve.
  {}
  else if(myvar.NS_solver == 1) // LSC
  {
-
-   prec_pt->set_navier_stokes_lsc_preconditioner(ns_preconditioner_pt);
-   ns_preconditioner_pt->set_navier_stokes_mesh(Bulk_mesh_pt);
 
    // F block solve
    // Preconditioner for the F block:
@@ -449,6 +364,9 @@ TiltedCavityProblem<ELEMENT>::TiltedCavityProblem
      Hypre_default_settings::
      set_defaults_for_2D_poisson_problem(hypre_preconditioner_pt);
 #endif
+   // Set the preconditioner in the LSC preconditioner.
+   prec_pt->set_f_preconditioner(f_preconditioner_pt);
+   
    }
    else if(myvar.F_solver == 2)
    {
@@ -464,9 +382,7 @@ TiltedCavityProblem<ELEMENT>::TiltedCavityProblem
 #endif
    }
 
-   // Set the preconditioner in the LSC preconditioner.
-   ns_preconditioner_pt->set_f_preconditioner(f_preconditioner_pt);
-   
+
    // P block solve
    //myvar.P_solver == 0 is default, so do nothing.
    if(myvar.P_solver == 1)
@@ -480,7 +396,7 @@ TiltedCavityProblem<ELEMENT>::TiltedCavityProblem
      Hypre_default_settings::
      set_defaults_for_2D_poisson_problem(hypre_preconditioner_pt);
 
-     ns_preconditioner_pt->set_p_preconditioner(p_preconditioner_pt);
+     prec_pt->set_p_preconditioner(p_preconditioner_pt);
 #endif
    }
  }
@@ -490,28 +406,13 @@ TiltedCavityProblem<ELEMENT>::TiltedCavityProblem
  }
 
  // Set the doc info for book keeping purposes.
- prec_pt->set_doc_info(&doc_info);
-
- if(myvar.Use_diagonal_w_block)
- {
-   prec_pt->use_diagonal_w_block();
- }
- else
- {
-   prec_pt->use_block_diagonal_w_block();
- }
-
- if(doc_info.is_doc_prec_data_enabled())
- {
-   prec_pt->enable_doc_prec();
- }
-
  // Build solve and preconditioner
  Solver_pt = new GMRES<CRDoubleMatrix>;
 
  // We use RHS preconditioning. Note that by default,
  // left hand preconditioning is used.
- static_cast<GMRES<CRDoubleMatrix>*>(Solver_pt)->set_preconditioner_RHS();
+ static_cast<GMRES<CRDoubleMatrix>*>(Solver_pt)
+   ->set_preconditioner_RHS();
 
  // Set solver and preconditioner
  Solver_pt->preconditioner_pt() = Prec_pt;
@@ -536,7 +437,7 @@ void TiltedCavityProblem<ELEMENT>::doc_solution(DocInfo& doc_info)
     sprintf(filename,"%s/%s.dat",doc_info.directory().c_str(),
             doc_info.label().c_str());
     some_file.open(filename);
-    Bulk_mesh_pt->output(some_file,npts);
+    mesh_pt()->output(some_file,npts);
     some_file.close();
   } // if
 }
