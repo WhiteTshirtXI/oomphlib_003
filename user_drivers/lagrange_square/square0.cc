@@ -452,7 +452,7 @@ TiltedCavityProblem<ELEMENT>::TiltedCavityProblem
    }
    else if(myvar.F_solver == 2)
    {
-     f_preconditioner_pt = new BlockDiagonalPreconditioner<CRDoubleMatrix>;
+     f_preconditioner_pt = new RayBlockDiagonalPreconditioner<CRDoubleMatrix>;
    }
    else if(myvar.F_solver == 3)
    {

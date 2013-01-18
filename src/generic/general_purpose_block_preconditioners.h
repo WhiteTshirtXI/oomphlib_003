@@ -146,7 +146,281 @@ namespace oomph
   Vector<unsigned> Dof_to_block_map;
  };
 
+  //=============================================================================
+ /// \short Block diagonal preconditioner. By default SuperLU is used to solve 
+ /// the subsidiary systems, but other preconditioners can be used by setting 
+ /// them using passing a pointer to a function of type 
+ /// SubsidiaryPreconditionerFctPt to the method 
+ /// subsidiary_preconditioner_function_pt().
+ //=============================================================================
+ template<typename MATRIX> 
+ class RayBlockDiagonalPreconditioner 
+  : public GeneralPurposeBlockPreconditioner<MATRIX>
+ {
+   
+ public :
+    
+  /// constructor - when the preconditioner is used as a master preconditioner
+  RayBlockDiagonalPreconditioner() : GeneralPurposeBlockPreconditioner<MATRIX>()
+  {
  
+#ifdef OOMPH_HAS_MPI
+   // by default we do not use two level parallelism
+   Use_two_level_parallelisation = false;
+
+   // null the Preconditioner array pt
+   Preconditioner_array_pt = 0;
+#endif
+
+   // Don't doc by default
+   Doc_time_during_preconditioner_solve=false;
+  }
+ 
+  /// Destructor - delete the preconditioner matrices
+  ~RayBlockDiagonalPreconditioner()
+  {
+   this->clean_up_memory();
+  }
+
+  /// clean up the memory
+  void clean_up_memory()
+  {
+#ifdef OOMPH_HAS_MPI
+   if (Use_two_level_parallelisation)
+    {
+     delete Preconditioner_array_pt;  
+     Preconditioner_array_pt = 0;
+    }
+   else
+#endif
+    {
+     //number of block types
+     unsigned n_block = Diagonal_block_preconditioner_pt.size();
+   
+     //delete diagonal blocks
+     for (unsigned i = 0 ; i < n_block; i++)
+      {
+       delete Diagonal_block_preconditioner_pt[i];
+       Diagonal_block_preconditioner_pt[i] = 0;
+      }
+    }
+     
+   // clean up the block preconditioner
+   this->clear_block_preconditioner_base();
+  }
+ 
+  /// Broken copy constructor
+  RayBlockDiagonalPreconditioner(const RayBlockDiagonalPreconditioner&) 
+  { 
+   BrokenCopy::broken_copy("RayBlockDiagonalPreconditioner");
+  } 
+ 
+  /// Broken assignment operator
+  void operator=(const RayBlockDiagonalPreconditioner&) 
+  {
+   BrokenCopy::broken_assign("RayBlockDiagonalPreconditioner");
+  }
+ 
+  /// Apply preconditioner to r
+  void preconditioner_solve(const DoubleVector &r, DoubleVector &z);
+ 
+  /// \short Setup the preconditioner 
+  virtual void setup();
+ 
+  /// \short Access function to the i-th subsidiary preconditioner,
+  /// i.e. the preconditioner for the i-th block.
+  Preconditioner* subsidiary_block_preconditioner_pt(const unsigned& i)
+   const
+  {return Diagonal_block_preconditioner_pt[i];}
+
+  /// \short Write access function to the i-th subsidiary preconditioner,
+  /// i.e. the preconditioner for the i-th block.
+  Preconditioner*& subsidiary_block_preconditioner_pt(const unsigned& i)
+  {return Diagonal_block_preconditioner_pt[i];}
+   
+#ifdef OOMPH_HAS_MPI
+  /// \short Use two level parallelisation 
+  void enable_two_level_parallelisation() 
+  { Use_two_level_parallelisation = true;}
+
+  /// \short Don't use two-level parallelisation
+  void disable_two_level_parallelisation() 
+  { Use_two_level_parallelisation = false;}
+
+#endif
+
+  /// Enable Doc timings in application of block sub-preconditioners
+  void enable_doc_time_during_preconditioner_solve()
+  {Doc_time_during_preconditioner_solve=true;}
+
+  /// Disable Doc timings in application of block sub-preconditioners
+  void disable_doc_time_during_preconditioner_solve()
+  {Doc_time_during_preconditioner_solve=false;}
+
+
+ private :
+  
+  /// \short Vector of SuperLU preconditioner pointers for storing the 
+  /// preconditioners for each diagonal block
+  Vector<Preconditioner*> Diagonal_block_preconditioner_pt;
+   
+#ifdef OOMPH_HAS_MPI
+  /// pointer for the PreconditionerArray
+  PreconditionerArray* Preconditioner_array_pt;
+#endif   
+
+#ifdef OOMPH_HAS_MPI
+  /// Use two level parallelism using the PreconditionerArray
+  bool Use_two_level_parallelisation;
+#endif
+
+  /// Doc timings in application of block sub-preconditioners?
+  bool Doc_time_during_preconditioner_solve;
+ };
+
+ //============================================================================
+ /// setup for the block diagonal preconditioner
+ //============================================================================
+ template<typename MATRIX> 
+ void RayBlockDiagonalPreconditioner<MATRIX>::setup()
+ {
+  // clean the memory
+  this->clean_up_memory();
+
+  // Set up the block look up schemes
+  GeneralPurposeBlockPreconditioner<MATRIX>::block_setup();
+
+  // number of types of degree of freedom
+  unsigned nblock_types = this->nblock_types();
+
+  // Resize the storage for the diagonal blocks
+  Diagonal_block_preconditioner_pt.resize(nblock_types);
+
+  // create the subsidiary preconditioners
+  for (unsigned i=0;i<nblock_types;i++)
+   {
+    if (this->Subsidiary_preconditioner_function_pt == 0)
+     {
+      Diagonal_block_preconditioner_pt[i] = new SuperLUPreconditioner;
+     }
+    else
+     {
+      Diagonal_block_preconditioner_pt[i] = 
+       (*(this->Subsidiary_preconditioner_function_pt))();
+     }
+   }
+
+  // if using two level parallelisation just get the matrices
+  // otherwise get the matrices and setup the preconditioners
+  Vector<CRDoubleMatrix*> block_diagonal_matrices(nblock_types);
+  for (unsigned i=0;i<nblock_types;i++)
+   {
+    CRDoubleMatrix* block_pt = 0;
+    this->get_block(i,i,block_pt);
+#ifdef OOMPH_HAS_MPI
+    if (Use_two_level_parallelisation)
+     {
+      block_diagonal_matrices[i] = block_pt;
+     }
+    else
+#endif
+     {
+      // Set up preconditioner (i.e. solve the block)
+      double superlusetup_start = TimingHelpers::timer();
+      Diagonal_block_preconditioner_pt[i]->setup(this->problem_pt(),block_pt);
+      double superlusetup_end = TimingHelpers::timer();
+      oomph_info << "Took " << superlusetup_end - superlusetup_start
+                 << "s to setup."<< std::endl;
+
+      // Done with this block now so delete it
+      delete block_pt;
+     }
+   }
+
+  // create the PreconditionerArray
+  // set it up
+  // delete the block matrices
+#ifdef OOMPH_HAS_MPI
+  if (Use_two_level_parallelisation)
+   {
+    Preconditioner_array_pt = new PreconditionerArray;
+    Preconditioner_array_pt->
+     setup_preconditioners(this->problem_pt(),
+                           block_diagonal_matrices,
+                           Diagonal_block_preconditioner_pt);
+    for (unsigned i = 0; i < nblock_types; i++)
+     {
+      delete block_diagonal_matrices[i];
+     }
+   }
+#endif
+ }
+ 
+ //=============================================================================
+ /// Preconditioner solve for the block diagonal preconditioner
+ //=============================================================================
+ template<typename MATRIX> 
+ void RayBlockDiagonalPreconditioner<MATRIX>::
+ preconditioner_solve(const DoubleVector& r, DoubleVector& z)
+ {
+  // Cache umber of block types
+  const unsigned n_block = this->nblock_types();
+
+  // vector of vectors for each section of residual vector
+  Vector<DoubleVector> block_r;
+  
+  // rearrange the vector r into the vector of block vectors block_r
+  this->get_block_vectors(r,block_r);
+  
+  // if the solution vector is not setup then build it
+  if (!z.built())
+   {
+    z.build(this->distribution_pt(),0.0);
+   }
+
+  // vector of vectors for the solution block vectors
+  Vector<DoubleVector> block_z(n_block);
+
+#ifdef OOMPH_HAS_MPI
+  if (Use_two_level_parallelisation)
+   {
+    Preconditioner_array_pt->solve_preconditioners(block_r,block_z);
+   }
+  else
+#endif
+   {
+    // solve each diagonal block
+    for (unsigned i = 0; i < n_block; i++)
+     {
+      double t_start=0.0;
+      if (Doc_time_during_preconditioner_solve)
+       {
+        t_start=TimingHelpers::timer();
+       }
+      Diagonal_block_preconditioner_pt[i]->preconditioner_solve(block_r[i],
+                                                                block_z[i]);
+      if (Doc_time_during_preconditioner_solve)
+       {
+        oomph_info << "Time for application of " << i 
+                   << "-th block preconditioner: " 
+                   << TimingHelpers::timer()-t_start 
+                   << std::endl;
+       }
+     }
+   }
+
+  // copy solution in block vectors block_r back to z
+  this->return_block_vectors(block_z,z);
+ }
+
+
+
+
+ ///////////////////////////////////////////////////////////////////////////////
+ ///////////////////////////////////////////////////////////////////////////////
+ ///////////////////////////////////////////////////////////////////////////////
+
+
 
  //=============================================================================
  /// \short Block diagonal preconditioner. By default SuperLU is used to solve 

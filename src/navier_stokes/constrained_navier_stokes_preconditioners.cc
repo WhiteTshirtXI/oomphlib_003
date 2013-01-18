@@ -710,15 +710,6 @@ namespace oomph
       blocktoblockvec.push_back(fluid_constrained_vec);
     }
     
-   /////////////////// 
-    for (unsigned i = 0; i < blocktoblockvec.size(); i++) 
-    {
-      for (unsigned j = 0; j < blocktoblockvec[i].size(); j++) 
-      {
-        std::cout << "(" << i <<","<<j<<")"<<blocktoblockvec[i][j]<< std::endl; 
-      }
-    }
-
     F_block_preconditioner_pt->set_prec_blocks(f_dofblock_pts,
                                                blocktoblockvec);
     
