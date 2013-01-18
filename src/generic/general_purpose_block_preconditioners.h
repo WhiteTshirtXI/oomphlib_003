@@ -382,7 +382,23 @@ namespace oomph
   {
     n_block = this->nblock_types();
   }
-  pause("ppppp"); 
+  
+    // Working vectors.
+    DoubleVector temp_vec;
+    DoubleVector another_temp_vec;
+
+  for(unsigned block_i = 0; block_i < n_block; block_i++)
+    {
+      // Extract the block
+      this->get_block_vector(block_i,r,temp_vec);
+      Diagonal_block_preconditioner_pt[block_i]->preconditioner_solve(temp_vec,
+                                                            another_temp_vec);
+
+      this->return_block_vector(block_i,another_temp_vec,z);
+      temp_vec.clear();
+      another_temp_vec.clear();
+    }
+  //pause("solved them all"); 
   
  /*  
   // vector of vectors for each section of residual vector
