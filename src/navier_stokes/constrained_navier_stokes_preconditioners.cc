@@ -670,9 +670,59 @@ namespace oomph
      }
     F_block_preconditioner_pt->
      turn_into_subsidiary_block_preconditioner(this,dof_map);
-    // NOTE: I HAVE TO CHANGE THIS SO IT USES MY AUGMENTED MATRIX
- //   pause("F_prec setup"); 
+    ///////////////////////////////////////////////////////////////////////////    
+    // Now we need to get the blocks and pass it to the set_prec_blocks function
+    DenseMatrix<CRDoubleMatrix* > f_dofblock_pts(ndof_types,
+                                             ndof_types,0);
     
+    for (unsigned i = 0; i < ndof_types; i++) 
+    {
+      for (unsigned j = 0; j < ndof_types; j++) 
+      {
+        f_dofblock_pts(i,j) = Prec_blocks(i,j);
+       
+      }
+    }
+
+    // Now create the mapping.
+    Vector<Vector<unsigned> > blocktoblockvec;
+    std::cout << "The mapping is:" << std::endl; 
+    
+    // For bulk and constained.
+    {
+      // Push back all the bulk dof blocks 
+      Vector<unsigned> fluid_bulk_vec;
+      
+      for (unsigned i = 0; i < Dim; i++) 
+      {
+        fluid_bulk_vec.push_back(i);
+      }
+      blocktoblockvec.push_back(fluid_bulk_vec);
+
+      unsigned ndof_constrained_types = ndof_types - Dim;
+      Vector<unsigned> fluid_constrained_vec;
+      
+      // Push back all the constrained dof types
+      for (unsigned i = Dim; i < ndof_types; i++) 
+      {
+        fluid_constrained_vec.push_back(i);
+      }
+      blocktoblockvec.push_back(fluid_constrained_vec);
+    }
+    
+   /////////////////// 
+    for (unsigned i = 0; i < blocktoblockvec.size(); i++) 
+    {
+      for (unsigned j = 0; j < blocktoblockvec[i].size(); j++) 
+      {
+        std::cout << "(" << i <<","<<j<<")"<<blocktoblockvec[i][j]<< std::endl; 
+      }
+    }
+
+    F_block_preconditioner_pt->set_prec_blocks(f_dofblock_pts,
+                                               blocktoblockvec);
+    
+    ///////////////////////////////////////////////////////////////////////////    
     F_block_preconditioner_pt->setup(problem_pt(),matrix_pt());
    }
   // otherwise F is not a block preconditioner

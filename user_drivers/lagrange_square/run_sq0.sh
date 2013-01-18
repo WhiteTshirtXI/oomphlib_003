@@ -15,7 +15,7 @@ elif [ "$RAYTARGET" == "wulfling.maths.manchester.ac.uk" ]; then
   cd $OOMPHPATH/src/ && make && make install && \
   cd $OOMPHPATH/user_drivers/lagrange_square/ && \
   make square0 && \
-  ./square0 --w_solver 0 --ns_solver 1 --f_solver 1 --p_solver 1 \
+  ./square0 --w_solver 0 --ns_solver 1 --f_solver 2 --p_solver 1 \
             --visc 0 --ang 30 --rey 100 --noel 4
 else
   echo "No such target for $RAYTARGET"

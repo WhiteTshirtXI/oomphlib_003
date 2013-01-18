@@ -15,7 +15,8 @@ gvim -p \
   ~/$SRC_NS_DIR/constrained_navier_stokes_preconditioners.h \
   ~/$SRC_NS_DIR/constrained_navier_stokes_preconditioners.cc \
   ~/$SRC_GEN_DIR/block_preconditioner.h \
-  ~/$SRC_GEN_DIR/block_preconditioner.cc
+  ~/$SRC_GEN_DIR/block_preconditioner.cc \
+  ~/$SRC_GEN_DIR/general_purpose_block_preconditioners.h
 elif [ "$RAYTARGET" == rice ]; then
   echo "Not done for $RAYTARGET"
   read -p "Press [Enter] key to quit."
