@@ -437,8 +437,6 @@ TiltedCavityProblem<ELEMENT>::TiltedCavityProblem
    // myvar.F_solver == 0 is default, so do nothing.
    if(myvar.F_solver == 1)
    {
-     std::cout << "about to get hypre f_prec" << std::endl; 
-     
 #ifdef OOMPH_HAS_HYPRE
      // LSC takes type "Preconditioner".
      f_preconditioner_pt = new HyprePreconditioner;
@@ -450,10 +448,7 @@ TiltedCavityProblem<ELEMENT>::TiltedCavityProblem
      // Set the HYPRE properties. See hypre_solver.cc for settings.
      Hypre_default_settings::
      set_defaults_for_2D_poisson_problem(hypre_preconditioner_pt);
-std::cout << "Done hypre f_prec" << std::endl; 
 #endif
-pause("done"); 
-
    }
    else if(myvar.F_solver == 2)
    {

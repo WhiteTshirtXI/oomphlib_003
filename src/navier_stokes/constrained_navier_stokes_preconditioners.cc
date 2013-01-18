@@ -618,7 +618,6 @@ namespace oomph
   // if the P preconditioner has not been setup
   if (P_preconditioner_pt == 0)
    {
-    pause("Setting up SuperLu for P"); 
     P_preconditioner_pt = new SuperLUPreconditioner;
     Using_default_p_preconditioner = true;
    }
@@ -654,8 +653,6 @@ namespace oomph
   // if the F preconditioner has not been setup
   if (F_preconditioner_pt == 0)
    {
-    pause("Creating SuperLU for F_prec"); 
-    
     F_preconditioner_pt = new SuperLUPreconditioner;
     Using_default_f_preconditioner = true;
    }
