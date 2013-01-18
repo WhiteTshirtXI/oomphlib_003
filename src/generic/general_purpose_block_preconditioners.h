@@ -372,8 +372,19 @@ namespace oomph
  preconditioner_solve(const DoubleVector& r, DoubleVector& z)
  {
   // Cache umber of block types
-  const unsigned n_block = this->nblock_types();
 
+  unsigned n_block = 0;
+  if(this->Prec_blocks_has_been_set)
+  {
+    n_block = this->Block_to_block_map.size();
+  }
+  else
+  {
+    n_block = this->nblock_types();
+  }
+  pause("ppppp"); 
+  
+ /*  
   // vector of vectors for each section of residual vector
   Vector<DoubleVector> block_r;
   
@@ -419,6 +430,7 @@ namespace oomph
 
   // copy solution in block vectors block_r back to z
   this->return_block_vectors(block_z,z);
+  */
  }
 
 

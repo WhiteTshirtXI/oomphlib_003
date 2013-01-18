@@ -972,8 +972,7 @@ namespace oomph
   // and return
   if (F_preconditioner_is_block_preconditioner)
    {
-    pause("should not get here.... from NS prec solve...");
-    return_block_natural_vector(0,yet_another_temp_vec,z);
+    return_block_vector(0,another_temp_vec,z);
     F_preconditioner_pt->preconditioner_solve(z,z);
    }
   else
