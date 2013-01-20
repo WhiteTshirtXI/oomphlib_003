@@ -98,13 +98,15 @@
 # to have been compiled with mpi support. Linking is done
 # with the lam mpi fortran compiler.
 #
+
+#--with-blas=/home/mheil/local/lib/blas/blas.a
+#--with-lapack=/home/mheil/local/lib/lapack/lapack.a
+#--with-trilinos=/home/mheil/test_external_local/trilinos_default_installation_mpi
+#--with-hypre=/home/mheil/test_external_local/hypre_default_installation_mpi
+
 --enable-suppress-doc
 --enable-MPI
 --enable-symbolic-links-for-headers
---with-blas=/home/mheil/local/lib/blas/blas.a
---with-lapack=/home/mheil/local/lib/lapack/lapack.a
---with-trilinos=/home/mheil/test_external_local/trilinos_default_installation_mpi
---with-hypre=/home/mheil/test_external_local/hypre_default_installation_mpi
 --with-mpi-self-tests="mpirun -np 2"
 CXXFLAGS="-g -DPARANOID -Wall -Wcast-qual -Wredundant-decls"
 CFLAGS="-g"

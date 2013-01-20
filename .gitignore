@@ -29,8 +29,11 @@ doc/
 # external_distributions/trilinos/trilinos-11.0.3-Source.tar.gz
 external_distributions/*
 !external_distributions/trilinos/
+!external_distributions/hypre/
 external_distributions/trilinos/*
+external_distributions/hypre/*
 !external_distributions/trilinos/trilinos-11.0.3-Source.tar.gz
+!external_distributions/hypre/hypre-2.0.0.tar.gz
 
 external_src/
 #INSTALL
