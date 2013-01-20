@@ -80,8 +80,8 @@ validation.log
 *\#
 .\#*
 
-# Data files
-*.dat
+# Data files. There are some .dat files not in .tar.gz
+*.userdat
 
 # Backup files
 *.bk.*
